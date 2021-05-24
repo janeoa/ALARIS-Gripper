@@ -1,5 +1,5 @@
-#ALARIS Gripper project
+# ALARIS Gripper project
 
-*Mechanics
-*Software
-*PCBs
+* Mechanics
+* Software
+* PCBs
