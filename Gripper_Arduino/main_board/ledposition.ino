@@ -1,24 +1,25 @@
-// C++ code
-//
 int pstn = 0; // for incoming serial data
 int prev = 0;
 void setup()
 {
   Serial.begin(9600);
-  pinMode(13, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(8, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(2, OUTPUT);
 }
 
 void loop()
 {
-    if (Serial.available() > 0) {
-    // read
-    pstn = Serial.parseInt();
-
-    // say what you got:
+    while (Serial.available()==0){}             // wait for user input
+    pstn = Serial.parseInt(); 
     Serial.print("I received: ");
     Serial.println(pstn);
-    }
-  	digitalWrite(prev, LOW);
     digitalWrite(pstn, HIGH);
-  	prev = pstn;
+    digitalWrite(prev, LOW);
+    prev = pstn;
 }
