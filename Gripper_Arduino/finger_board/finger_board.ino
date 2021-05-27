@@ -2,36 +2,31 @@
 #include "Motor.h"
 
 // Include the required Wire library for I2C<br>#include <Wire.h>
-int LED = 13;
-int x = 0;
 
 Motor mid(7,8,9, A0, 310, 810);
 Motor top(7,8,9, A1,  80, 410);
 
 void setup() {
-  // Define the LED pin as Output
-  pinMode (LED, OUTPUT);
-  // Start the I2C Bus as Slave on address 9
+//  Wire.setClock(10000);
   Wire.begin(9); 
-  // Attach a function to trigger when something is received.
   Wire.onReceive(receiveEvent);
-  Serial.begin(9600);
-
+  Wire.onRequest(requestEvent);
+  
   mid.setGoal(50);
 }
 
 
 void receiveEvent(int bytes) {
-  x = Wire.read();    // read one character from the I2C
+//  x = Wire.read();    // read one character from the I2C
 }
 
+void requestEvent() {
+//  char msg[11];
+//  sprintf(msg, "%4d\t%4d\r\n", mid.getPos(), top.getPos());
+  Wire.write("help");
+//  Wire.endTransmission();
+}
 
 void loop() {
-  mid.tick();
-  
-  Serial.print(mid.getPos());
-  Serial.print("\t");
-  Serial.println(mid.getGoal());
-// 
-  
+//  mid.tick();
 }
