@@ -98,3 +98,5 @@ Temporary Items
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/eagle,macos,visualstudiocode
+/GripperPCB/CAMOutputs/
+/GripperPCB/gripper finger 2.zip
