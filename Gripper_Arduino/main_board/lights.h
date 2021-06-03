@@ -1,6 +1,14 @@
 #ifndef Lights_h
 #define Lights_h
 
+/**
+ * States: READY, MOVING
+ */
+#define READY       0
+#define CALIBRATING 1
+#define SET         2
+#define SYNC        3
+
 #include "Arduino.h"
 
 class Lights{
@@ -17,8 +25,12 @@ public:
   int getPin(int pin){
     return _pins[pin];
   }
+  void setLight(int pin);
+  void setLight(int pina, int pinb);
+  void tick();
 private:
   int* _pins;
+  byte _state = CALIBRATING;
 };
 
 #endif

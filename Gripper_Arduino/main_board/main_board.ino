@@ -1,49 +1,49 @@
 #include <Wire.h>
 #include "Lights.h"
 
-const int pins[] = {2,3,4,5,6,7,8,9};
-//Lights lights(pins);
+#define INBUFFSIZE 5
 
-LightsLights lights(pins);
+const int pins[] = {2,3,4,5,6,7,8,9};
+Lights lights(pins);
+char readbuffer[INBUFFSIZE];
 
 void setup() {
-  int array[8] = {1, 2, 3, 4, 5, 6, 7, 8};
   
   Serial.begin(9600);  // start serial for output
   
-  Serial.print(">>");
-  for(int i=0; i<8; i++){
-    Serial.print(lights.getPin(i));  
-    Serial.print("\t");  
-  }
-  Serial.println("<<");
-  
   Wire.setClock(10000);
   Wire.begin();        // join i2c bus (address optional for master)
-  
+  for (int i=0; i<8; i++){
+    pinMode(pins[i], OUTPUT);
+  }
 //  Serial.println("mid.pos top.pos");
-
-  while(true){}
+  Serial.println(F("ready to get index [0-7]"));
 }
 
 void loop() {
-  Serial.println("...");
-  // check if the I2C lines are LOW
-  if (digitalRead(SDA) == LOW || digitalRead(SCL) == LOW)
-  {
-    Serial.println("Bus error");
-  }else{
-    Serial.println(Wire.requestFrom(9, 10));    // request 6 bytes from slave device #8
-    Serial.println("requested");
+  lights.tick();
+
   
-    Serial.print(">>");
-    while (Wire.available()) { // slave may send less than requested
-  //    Serial.println("available");
-      char c = Wire.read(); // receive a byte as character
-  //    Serial.print(">>");
-      Serial.print(c);         // print the character
+  if (Serial.available()) {
+    Serial.readBytes(readbuffer, INBUFFSIZE);
+    int a,b;
+    char msg[50];
+    
+    if(strstr(readbuffer, " ")>0){
+      sscanf (readbuffer,"%d %d", &a,&b);
+      sprintf(msg, "Got: %d and %d, its pin %d and %d",a,b, pins[a],  pins[b]);
+      lights.setLight(a, b);
+    }else{
+      sscanf (readbuffer,"%d", &a);
+      sprintf(msg, "Got: %d, its pin %d",a, pins[a]);
+      lights.setLight(a);
     }
-    Serial.println("<<");
+     
+    Serial.println(msg);
+    
+    Wire.beginTransmission(9);
+    Wire.write(a);
+    Wire.endTransmission();
   }
-  delay(500);
+
 }
