@@ -6,8 +6,9 @@
 Motor mid(7,8,9, A0, 310, 810);
 Motor top(7,8,9, A1,  80, 410);
 
+
 void setup() {
-//  Wire.setClock(10000);
+  Serial.begin(9600);
   Wire.begin(9); 
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
