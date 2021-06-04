@@ -16,7 +16,9 @@ int sensorPin = A0;
 
 int lightCal;
 
-int x;
+int x = -1;
+int prev = 4;
+int curr = 4;
 
 void setup() {
   Serial.begin(9600);
@@ -38,8 +40,7 @@ void setup() {
 char msg[50];
 
 void loop() {
-//  Serial.println(x);
-//  delay(5000);
+  sensorValue = analogRead(sensorPin);
   
   if(state == CALIB){   
     lightCalib = analogRead(sensorPin);
@@ -48,41 +49,52 @@ void loop() {
   }
 
   if(state == READY){
-          digitalWrite(in1, LOW);
-        digitalWrite(in2, LOW);
+     digitalWrite(in1, LOW);
+     digitalWrite(in2, LOW);
   }
   
-  if (x == 1){
+  if (x > -1){
      state = MOVE;
-     x = 0;
+     prev = curr;
+     curr = x;
+     x = -1;
   }  
          
   if(state == MOVE){
-    sensorValue = analogRead(sensorPin); // read the value from the sensor
-    if (sensorValue < lightCalib + 100){
-       directionControl();
+     // read the value from the sensor
+    if (sensorValue < lightCalib + 200){
+       directionControl(is_next_on_right(prev, curr));
     }
-    else if (sensorValue > lightCalib + 100) {
+    else if (sensorValue > lightCalib + 200) {
        state = READY;
        Serial.println("found");
     }
   }
 
-  sprintf(msg, "%1d\t%4d\t%1d", state, sensorValue, x);
+  sprintf(msg, "%1d\t%4d\t%1d\t%1d\t%1d", state, sensorValue, x, prev, curr);
   Serial.println(msg);
 }
 
 // This function lets you control spinning direction of motors
-void directionControl() {
+void directionControl(bool toTheRight) {
   // Set motors to maximum speed
   // For PWM maximum possible values are 0 to 255
   analogWrite(enA, 255);
 
   // Turn on motor A & B
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
+  digitalWrite(in1, toTheRight);
+  digitalWrite(in2, !toTheRight);
 }
 
 void receiveEvent(int bytes) {
   x = Wire.read();    // read one character from the I2C
+}
+
+bool is_next_on_right(int prev, int curr){
+  bool is_right = false;
+  
+  int delta = curr - prev;
+  if(delta > 0 && delta < 4) is_right = true;
+  if(delta < -4 && delta > -8) is_right = true;
+  return is_right;
 }

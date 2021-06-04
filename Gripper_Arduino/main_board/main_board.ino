@@ -26,24 +26,37 @@ void loop() {
   
   if (Serial.available()) {
     Serial.readBytes(readbuffer, INBUFFSIZE);
-    int a,b;
+    int a = -1,b = -1;
     char msg[50];
+    bool checked = false;
     
     if(strstr(readbuffer, " ")>0){
       sscanf (readbuffer,"%d %d", &a,&b);
-      sprintf(msg, "Got: %d and %d, its pin %d and %d",a,b, pins[a],  pins[b]);
-      lights.setLight(a, b);
+      if(a < 0 || a > 7 || b < 0 || b > 7){
+        Serial.println("You motherfucker");  
+      }else{
+        sprintf(msg, "Got: %d and %d, its pin %d and %d",a,b, pins[a],  pins[b]);
+        lights.setLight(a, b);
+        checked = true;
+      }
     }else{
       sscanf (readbuffer,"%d", &a);
-      sprintf(msg, "Got: %d, its pin %d",a, pins[a]);
-      lights.setLight(a);
+      if(a < 0 || a > 7){
+        Serial.println("Enter okay number, please");  
+      }else{
+        sprintf(msg, "Got: %d and %d, its pin %d and %d",a, pins[a]);
+        lights.setLight(a);
+        checked = true;
+      }
     }
      
     Serial.println(msg);
-    
-    Wire.beginTransmission(9);
-    Wire.write(a);
-    Wire.endTransmission();
+    delay(20);
+    if(checked){
+      Wire.beginTransmission(9);
+      Wire.write(a);
+      Wire.endTransmission();
+    }
   }
 
 }

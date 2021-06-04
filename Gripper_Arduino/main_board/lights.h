@@ -13,7 +13,7 @@
 
 class Lights{
 public:
-  Lights(int* pins){
+  Lights(const int* pins){
     _pins = new int[8];
     for (int i(0); i < 8; i++) {
       this->_pins[i] = pins[i];
