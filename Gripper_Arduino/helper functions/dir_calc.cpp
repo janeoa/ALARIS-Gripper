@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
 	test(7,8,1);
 	test(6,5,0);
 	test(2,5,1);
+	test(7,0,1);
 	
 	
 }
