@@ -2,7 +2,11 @@
 #include "Motor.h"
 
 // Include the required Wire library for I2C<br>#include <Wire.h>
-
+/**
+ * IC2 - M1 -  2/4 - 3
+ * IC2 - M2 -  6/7 - 5
+ * IC3 - M3 -  8/9 -10
+ */
 Motor mid(7,8,9, A0, 310, 810);
 Motor top(7,8,9, A1,  80, 410);
 
