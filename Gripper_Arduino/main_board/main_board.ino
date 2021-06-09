@@ -33,7 +33,7 @@ void loop() {
     if(strstr(readbuffer, " ")>0){
       sscanf (readbuffer,"%d %d", &a,&b);
       if(a < 0 || a > 7 || b < 0 || b > 7){
-        Serial.println("You motherfucker");  
+        Serial.println("Enter okay number, please");  
       }else{
         sprintf(msg, "Got: %d and %d, its pin %d and %d",a,b, pins[a],  pins[b]);
         lights.setLight(a, b);
@@ -44,7 +44,7 @@ void loop() {
       if(a < 0 || a > 7){
         Serial.println("Enter okay number, please");  
       }else{
-        sprintf(msg, "Got: %d and %d, its pin %d and %d",a, pins[a]);
+        sprintf(msg, "Got: %d, its pin %d",a, pins[a]);
         lights.setLight(a);
         checked = true;
       }
