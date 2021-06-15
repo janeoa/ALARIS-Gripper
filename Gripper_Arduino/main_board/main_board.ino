@@ -9,7 +9,10 @@ char readbuffer[INBUFFSIZE];
 
 void setup() {
   
+  
   Serial.begin(9600);  // start serial for output
+
+  Serial.print("init");
   
   Wire.setClock(10000);
   Wire.begin();        // join i2c bus (address optional for master)
@@ -26,7 +29,7 @@ void loop() {
   
   if (Serial.available()) {
     Serial.readBytes(readbuffer, INBUFFSIZE);
-    int a = -1,b = -1;
+    byte a = -1,b = -1;
     char msg[50];
     bool checked = false;
     
@@ -51,12 +54,62 @@ void loop() {
     }
      
     Serial.println(msg);
-    delay(20);
     if(checked){
+      byte toFinger[3];
+      toFinger[0] =  a; // new roll  pos
+      toFinger[1] = 50; // new rot   pos
+      toFinger[2] = 65; // new close pos
+      
+      dexDump(toFinger,3);
       Wire.beginTransmission(9);
-      Wire.write(a);
+      Wire.write(toFinger, 3);
       Wire.endTransmission();
     }
   }
 
+  checkFingerState(0);
+
+}
+
+void checkFingerState(byte finger_id){
+  
+  const byte bufflen = 4;
+  byte readbuf[bufflen];
+  
+  Wire.requestFrom(finger_id, bufflen);
+
+  
+  byte binex = 0;
+  while(Wire.available()){
+    readbuf[binex++] = Wire.read(); // receive a byte as character
+  }
+
+  int a = (int)readbuf[0:1];
+  int b = (int)readbuf[2];
+  char msg[10];
+  sprintf(msg,"%d\t%d",a,b);
+  Serial.println(msg);
+
+  dexDump(readbuf, bufflen);
+
+  delay(300);
+}
+
+void sendFingerState(int fingerID){
+  
+}
+
+void dexDump(char *in, int len){
+  Serial.print(">>");
+  for(int i=0; i<len; i++){
+    printHex(in[i]);
+  }
+  Serial.println("<<");
+}
+
+void printHex(uint8_t num) {
+  char hexCar[2];
+
+  sprintf(hexCar, "%02X", num);
+  Serial.print(hexCar);
 }
