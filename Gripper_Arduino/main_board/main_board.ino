@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "Lights.h"
 
-#define INBUFFSIZE 3
+#define INBUFFSIZE 5
 const char*emtpybuff3 = "\0\0\0";
 
 const int pins[] = {2,3,4,5,6,7,8,9};
@@ -21,45 +21,33 @@ void setup() {
 void loop() {
   lights.tick();
   
-  if (Serial.readBytes(readbuffer, INBUFFSIZE)>0) {
-    for(int i=0; i<INBUFFSIZE; i++){
-        readbuffer[i] = (readbuffer[i]=='\r' || readbuffer[i]=='\n')?'\0':readbuffer[i];
-    }
-    
-    byte a = -1,b = -1;
+  if (Serial.available()) {
+    Serial.readBytes(readbuffer, INBUFFSIZE);
+    int a = -1,b = -1;
     char msg[50];
-    sprintf(msg, "<>\n");
-    Serial.print(">>>");
-    Serial.print(readbuffer);
-    Serial.println("<<<");
-    
     bool checked = false;
     
     if(strstr(readbuffer, " ")>0){
       sscanf (readbuffer,"%d %d", &a,&b);
-      sprintf(msg, "two nums %d %d",a,b);
-      Serial.println(msg);
       if(a < 0 || a > 7 || b < 0 || b > 7){
         Serial.println("Enter okay number, please");  
       }else{
         sprintf(msg, "Got: %d and %d, its pin %d and %d",a,b, pins[a],  pins[b]);
-        Serial.println(msg);
         lights.setLight(a, b);
         checked = true;
       }
     }else{
       sscanf (readbuffer,"%d", &a);
-      sprintf(msg, "one num %d",a);
-      Serial.println(msg);
       if(a < 0 || a > 7){
         Serial.println("Enter okay number, please");  
       }else{
         sprintf(msg, "Got: %d, its pin %d",a, pins[a]);
-        Serial.println(msg);
         lights.setLight(a);
         checked = true;
       }
     }
+    Serial.println(msg);
+//    sprintf(msg, "Got: %d, its pin %d",a, pins[a]);
     
 //    memcpy(readbuffer, emtpybuff3, INBUFFSIZE);
     if(checked){
