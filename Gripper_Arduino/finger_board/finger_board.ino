@@ -3,15 +3,15 @@
 #include "Roller.h"
 // Include the required Wire library for I2C<br>#include <Wire.h>
 /**
- * IC2 - M1 -  2/4 - 3  -  mid
- * IC2 - M2 -  6/7 - 5
- * IC3 - M3 -  8/9 -10
+ * IC2 - M1 -  2/4 - 3  -  mid    A2^
+ * IC2 - M2 -  6/7 - 5  -  top    A1
+ * IC3 - M3 -  8/9 -10  -  roll   A0
  */
 
 /**
  * ADC0 - Light Res
- * ADC1 - R1 (down)
- * ADC2 - R3 (closer to i2c)
+ * ADC1 - R1 (down)           top
+ * ADC2 - R3 (closer to i2c)  mid
  */
 Motor   mid(2, 4,  3, A2, 500, 780);
 Motor   top(6, 7,  5, A1, 250, 410);
@@ -35,22 +35,20 @@ void receiveEvent(int bytes) {
     buff[i] = Wire.read();    // read one character from the I2C
   }
 
-//  char msg[10];
-//  sprintf(msg, "%d\t%d\t%d", (byte)buff[0],(byte)buff[1],(byte)buff[2]);
   roll.setGoal((byte)buff[0]);
   mid.setGoal((byte)buff[1]);
   top.setGoal((byte)buff[2]);
-//  Serial.println(msg);
 }
 
 void requestEvent() {
-  byte reply[4];
-  reply[0] = mid.getPos();
-  reply[2] = top.getPos();
-//  sprintf(msg, "%4d\t%4d\r\n", mid.getPos(), top.getPos());
-  Wire.write(reply,4);
-//  Wire.endTransmission();
-  Serial.println("sent");
+  unsigned char reply[6];
+  unsigned int raw0 = analogRead(A0);//mid.getPos();
+  unsigned int raw1 = analogRead(A1);//top.getPos();
+  unsigned int raw2 = analogRead(A2);//top.getPos();
+  memcpy(reply  , (char*)&raw0, 2);
+  memcpy(reply+2, (char*)&raw1, 2);
+  memcpy(reply+4, (char*)&raw2, 2);
+  Wire.write(reply,6);
 }
 
 void loop() {

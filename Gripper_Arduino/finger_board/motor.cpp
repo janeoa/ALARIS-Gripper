@@ -14,6 +14,7 @@ Motor::Motor(int pinA, int pinB, int pinE, int anal, int minp, int maxp){
   pinMode(pinA, OUTPUT);
   pinMode(pinB, OUTPUT);
   pinMode(pinE, OUTPUT);
+  digitalWrite(pinE, HIGH);
 }
 
 void Motor::setGoal(int goal){
