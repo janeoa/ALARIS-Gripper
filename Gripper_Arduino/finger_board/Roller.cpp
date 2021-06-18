@@ -10,10 +10,10 @@ void Roller::tick(){
       digitalWrite(in2, LOW);  
     } break;
     case MOVE:{
-      if (sensorValue < lightCalib + 200){
+      if (sensorValue < 400){
          directionControl(is_next_on_right(prev, curr));
       }
-      else if (sensorValue > lightCalib + 200) {
+      else if (sensorValue > 400) {
          state = READY;
 //         Serial.println("found");
       }  
