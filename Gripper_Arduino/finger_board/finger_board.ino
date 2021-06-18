@@ -15,7 +15,7 @@
  */
 Motor   mid(2, 4,  3, A2, 500, 780);
 Motor   top(6, 7,  5, A1, 250, 410);
-Roller roll(8, 9, 10, A0);
+Roller roll(8, 9, 10, A3);
 
 void setup() {
   Serial.begin(9600);
@@ -41,18 +41,40 @@ void receiveEvent(int bytes) {
 }
 
 void requestEvent() {
-  unsigned char reply[6];
-  unsigned int raw0 = analogRead(A0);//mid.getPos();
-  unsigned int raw1 = analogRead(A1);//top.getPos();
-  unsigned int raw2 = analogRead(A2);//top.getPos();
-  memcpy(reply  , (char*)&raw0, 2);
-  memcpy(reply+2, (char*)&raw1, 2);
-  memcpy(reply+4, (char*)&raw2, 2);
-  Wire.write(reply,6);
+  unsigned char reply[10];
+  const unsigned int rawP = mid.getPos();
+  unsigned int raw0 = mid.getPos();
+  unsigned int raw1 = top.getPos();
+  unsigned int raw2 = roll.getGoal();
+  unsigned int raw3 = roll.getAnal();
+  memcpy(reply+2, (char*)&rawP, 2);
+  memcpy(reply+2, (char*)&raw0, 2);
+  memcpy(reply+4, (char*)&raw1, 2);
+  memcpy(reply+6, (char*)&raw2, 2);
+  memcpy(reply+8, (char*)&raw3, 2);
+  Wire.write(reply,10);
 }
 
 void loop() {
   mid.tick();
   top.tick();
   roll.tick();
+//  requestEvent();
+//  roll.printVars();
+}
+
+
+void dexDump(char *in, int len){
+  Serial.print(">>");
+  for(int i=0; i<len; i++){
+    printHex(in[i]);
+  }
+  Serial.println("<<");
+}
+
+void printHex(uint8_t num) {
+  char hexCar[2];
+
+  sprintf(hexCar, "%02X", num);
+  Serial.print(hexCar);
 }

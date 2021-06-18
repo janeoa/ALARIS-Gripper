@@ -2,9 +2,10 @@
 #include "Lights.h"
 
 #define INBUFFSIZE 5
-const char*emtpybuff3 = "\0\0\0";
 
 const int pins[] = {2,3,4,5,6,7,8,9};
+const char*emtpybuff5 = "\0\0\0\0\0";
+
 Lights lights(pins);
 char readbuffer[INBUFFSIZE];
 
@@ -15,10 +16,15 @@ void setup() {
   for (int i=0; i<8; i++){
     pinMode(pins[i], OUTPUT);
   }
-  Serial.println(F("ready to get index [0-7]"));
+  Serial.println('\0');
 }
 
+
+long lastCall = millis();
+
 void loop() {
+  
+  
   lights.tick();
   
   if (Serial.available()) {
@@ -47,9 +53,8 @@ void loop() {
       }
     }
     Serial.println(msg);
-//    sprintf(msg, "Got: %d, its pin %d",a, pins[a]);
+    memcpy(readbuffer, emtpybuff5, INBUFFSIZE);
     
-//    memcpy(readbuffer, emtpybuff3, INBUFFSIZE);
     if(checked){
       byte toFinger[3];
       toFinger[0] =  a; // new roll  pos
@@ -57,19 +62,22 @@ void loop() {
       toFinger[2] = 65; // new close pos
       
 //      dexDump(toFinger,3);
-      Wire.beginTransmission(9);
+      Wire.beginTransmission(0);
       Wire.write(toFinger, 3);
       Wire.endTransmission();
     }
   }
 
-//  checkFingerState(0);
+  if(millis()-lastCall>250){
+    checkFingerState(0);
+    lastCall = millis();
+  }
 
 }
 
 void checkFingerState(byte finger_id){
   
-  const byte bufflen = 6;
+  const byte bufflen = 10;
   byte readbuf[bufflen];
   Wire.requestFrom(finger_id, bufflen);
   bool got_data = false;
@@ -81,12 +89,13 @@ void checkFingerState(byte finger_id){
   }
 
   if(got_data){
-    int aa,bb,cc;
-    memcpy((int*)&aa  , readbuf  , 2);
-    memcpy((int*)&bb  , readbuf+2, 2);
-    memcpy((int*)&cc  , readbuf+4, 2);
+    int aa,bb,cc,dd;
+    memcpy((int*)&aa  , readbuf+2, 2);
+    memcpy((int*)&bb  , readbuf+4, 2);
+    memcpy((int*)&cc  , readbuf+6, 2);
+    memcpy((int*)&dd  , readbuf+8, 2);
     char msg[20];
-    sprintf(msg,"%d\t%d\t%d",aa,bb,cc);
+    sprintf(msg,"%d\t%d\t%03d\t%d",aa,bb,cc,dd);
     Serial.println(msg);
 //    dexDump(readbuf, bufflen);
   }
@@ -97,6 +106,8 @@ void checkFingerState(byte finger_id){
 void sendFingerState(int fingerID){
   
 }
+
+
 
 void dexDump(char *in, int len){
   Serial.print(">>");
