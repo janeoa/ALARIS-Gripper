@@ -25,8 +25,18 @@ class Roller{
     void tick();
 
     void setGoal(byte goal){
-      x = goal;
+      if(goal!=curr) x = goal;
     };
+
+    void printVars(){
+      char msg[50];
+      sprintf(msg, "x:%d, p:%d, c:%d", x, prev, curr);
+      Serial.println(msg);
+    }
+
+    int getAnal(){return sensorValue;}
+
+    int getGoal(){return prev*100+curr*10+state; }
   private:
     byte enA,in1,in2,sensorPin;
 
@@ -34,7 +44,7 @@ class Roller{
     int sensorValue;
     byte state = CALIB;
     int lightCal;
-    byte x;
+    int x = -1;
 
     byte prev = 4;
     byte curr = 4;
