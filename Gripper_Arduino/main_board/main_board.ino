@@ -10,7 +10,7 @@ Lights lights(pins);
 char readbuffer[INBUFFSIZE];
 
 void setup() {
-  Serial.begin(9600);  // start serial for output
+  Serial.begin("115200");  // start serial for output
   Wire.setClock(10000);
   Wire.begin();        // join i2c bus (address optional for master)
   for (int i=0; i<8; i++){
