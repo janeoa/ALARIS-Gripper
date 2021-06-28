@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/jacobsa/go-serial/serial"
@@ -34,27 +35,33 @@ func NewGripper() *Gripper {
 }
 
 func serveGripper(in *Gripper) {
-	// Open the port.
-	port, err := serial.Open(in.options)
-	if err != nil {
-		color.RedString("the port is busy")
-		color.Cyan("available ports: %v\n", testPorts())
-		log.Fatalf("serial.Open: %v", err)
-	}
-
-	// Make sure to close it later.
-	defer port.Close()
-
 	for {
-		buf := make([]byte, 32)
-		n, err := port.Read(buf)
+		// Open the port.
+		port, err := serial.Open(in.options)
 		if err != nil {
-			if err != io.EOF {
-				fmt.Println("Error reading from serial port: ", err)
+			color.RedString("the port is busy")
+			color.Cyan("available ports: %v\n", testPorts())
+			// log.Fatalf("serial.Open: %v", err)
+			time.Sleep(time.Second)
+			continue
+		}
+
+		// Make sure to close it later.
+		defer port.Close()
+
+		for {
+			buf := make([]byte, 32)
+			n, err := port.Read(buf)
+			if err != nil {
+				if err != io.EOF {
+					fmt.Println("Error reading from serial port: ", err)
+					port.Close()
+					break
+				}
+			} else {
+				buf = buf[:n]
+				color.Yellow("rx: [%s]\n", strings.Trim(string(buf), "\r\n"))
 			}
-		} else {
-			buf = buf[:n]
-			color.Yellow("rx: [%s]\n", strings.Trim(string(buf), "\r\n"))
 		}
 	}
 }
