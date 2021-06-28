@@ -8,15 +8,28 @@ const char*emtpybuff5 = "\0\0\0\0\0";
 
 Lights lights(pins);
 char readbuffer[INBUFFSIZE];
+bool foundSlaves[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 void setup() {
-  Serial.begin("115200");  // start serial for output
+  Serial.begin(115200);  // start serial for output
   Wire.setClock(10000);
   Wire.begin();        // join i2c bus (address optional for master)
   for (int i=0; i<8; i++){
     pinMode(pins[i], OUTPUT);
   }
   Serial.println('\0');
+
+//  Serial.println("searching for slaves");
+  Wire.begin();
+  for (byte i = 0; i < 8; i++) {
+    Wire.beginTransmission(i);
+    if (Wire.endTransmission() == 0) {
+      foundSlaves[i] = 1;
+    }
+  }
+  char msg[50];
+  sprintf(msg, "foundSlaves: %d%d%d%d%d%d%d%d\r\n", foundSlaves[0],foundSlaves[1],foundSlaves[2],foundSlaves[3],foundSlaves[4],foundSlaves[5],foundSlaves[6],foundSlaves[7]);
+  Serial.println(msg);
 }
 
 
@@ -107,8 +120,6 @@ void sendFingerState(int fingerID){
   
 }
 
-
-
 void dexDump(char *in, int len){
   Serial.print(">>");
   for(int i=0; i<len; i++){
@@ -122,4 +133,13 @@ void printHex(uint8_t num) {
 
   sprintf(hexCar, "%02X", num);
   Serial.print(hexCar);
+}
+
+unsigned char ToByte(bool b[8])
+{
+    unsigned char c = 0;
+    for (int i=0; i < 8; ++i)
+        if (b[i])
+            c |= 1 << i;
+    return c;
 }
