@@ -189,6 +189,7 @@ func main() {
 		connection_status.Text = "Connecting..."
 	})
 	go fetchUART(gripper, statusText, combo)
+	go sendUART(gripper)
 	topbuttons := container.New(&maxVbox{}, connection_status, combo)
 
 	withlobar := container.New(layout.NewVBoxLayout(), topbuttons, nnewcont, buttons)

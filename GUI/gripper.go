@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,6 +16,7 @@ type Gripper struct {
 	options   serial.OpenOptions
 	connected bool
 	tosend    string
+	port      io.ReadWriteCloser
 }
 
 func NewGripper() *Gripper {
@@ -38,7 +40,7 @@ func NewGripper() *Gripper {
 }
 
 func serveGripper(in *Gripper) {
-	color.CyanString("serve gripper...")
+	time.Sleep(time.Millisecond * 100)
 	for {
 		if in.options.PortName == "placeholder" {
 			time.Sleep(time.Second)
@@ -51,12 +53,14 @@ func serveGripper(in *Gripper) {
 			continue
 		}
 
+		in.port = port
 		// Make sure to close it later.
 		defer port.Close()
 
+		buf := make([]byte, 200)
 		for {
-			buf := make([]byte, 32)
-			n, err := port.Read(buf)
+			subbuff := make([]byte, 100)
+			n, err := port.Read(subbuff)
 			if err != nil {
 				if err != io.EOF {
 					log.Println("Error reading from serial port: ", err)
@@ -66,14 +70,31 @@ func serveGripper(in *Gripper) {
 				}
 			} else {
 				in.connected = true
-				buf = buf[:n]
-				color.Yellow("rx: [%s]\n", strings.Trim(string(buf), "\r\n"))
+				subbuff = subbuff[:n]
+				buf = append(buf, subbuff...)
+				color.Cyan("%s", hex.Dump(buf))
+				if strings.Contains(string(buf), "\r\n") {
+					subs := strings.Split(string(buf), "\r\n")
+					if len(subs) > 1 {
+						for i := 0; i < len(subs); i++ {
+							parseRX(subs[i])
+						}
+						// buf = []byte(subs[len(subs)-1])
+						buf = make([]byte, 200)
+					}
+				}
 			}
+		}
+	}
+}
 
-			if in.tosend != "" {
-				port.Write([]byte(in.tosend))
-				in.tosend = ""
-			}
+func sendUART(in *Gripper) {
+	for {
+		time.Sleep(time.Millisecond * 200)
+		if in.tosend != "" {
+			color.Cyan("Writing %s\n", in.tosend)
+			in.port.Write([]byte(in.tosend + "\r\n"))
+			in.tosend = ""
 		}
 	}
 }
@@ -102,4 +123,11 @@ func testPorts() []string {
 		}
 	}
 	return listofports
+}
+
+func parseRX(in string) {
+	color.Yellow("parsing {%s}", in)
+	if strings.Contains(in, "foundSlaves") {
+		color.Green("found slaves {%s}", strings.Trim(in, "\r\n"))
+	}
 }
