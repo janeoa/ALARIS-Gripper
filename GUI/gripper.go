@@ -57,7 +57,7 @@ func serveGripper(in *Gripper) {
 		// Make sure to close it later.
 		defer port.Close()
 
-		buf := make([]byte, 200)
+		buf := []byte{}
 		for {
 			subbuff := make([]byte, 100)
 			n, err := port.Read(subbuff)
@@ -77,10 +77,13 @@ func serveGripper(in *Gripper) {
 					subs := strings.Split(string(buf), "\r\n")
 					if len(subs) > 1 {
 						for i := 0; i < len(subs); i++ {
-							parseRX(subs[i])
+							if len(subs[i]) > 1 {
+								color.Red("len(subs[i]): %d", len(subs[i]))
+								parseRX(subs[i])
+							}
 						}
 						// buf = []byte(subs[len(subs)-1])
-						buf = make([]byte, 200)
+						buf = []byte{}
 					}
 				}
 			}
