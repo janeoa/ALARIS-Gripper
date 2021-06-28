@@ -180,7 +180,7 @@ func main() {
 
 	withlobar := container.New(layout.NewVBoxLayout(), nnewcont, buttons)
 
-	serveGripper(gripper)
+	go serveGripper(gripper)
 
 	myWindow.SetContent(withlobar)
 	myWindow.ShowAndRun()
