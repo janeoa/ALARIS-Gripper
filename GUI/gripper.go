@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,11 +12,13 @@ import (
 )
 
 type Gripper struct {
-	options serial.OpenOptions
+	options   serial.OpenOptions
+	connected bool
+	tosend    string
 }
 
 func NewGripper() *Gripper {
-	portname := "/dev/tty.usbmodem14201"
+	portname := "placeholder"
 
 	options := serial.OpenOptions{
 		PortName:        portname,
@@ -28,20 +29,24 @@ func NewGripper() *Gripper {
 	}
 
 	gripper := &Gripper{
-		options: options,
+		options:   options,
+		connected: false,
+		tosend:    "",
 	}
 
 	return gripper
 }
 
 func serveGripper(in *Gripper) {
+	color.CyanString("serve gripper...")
 	for {
+		if in.options.PortName == "placeholder" {
+			time.Sleep(time.Second)
+			continue
+		}
 		// Open the port.
 		port, err := serial.Open(in.options)
 		if err != nil {
-			color.RedString("the port is busy")
-			color.Cyan("available ports: %v\n", testPorts())
-			// log.Fatalf("serial.Open: %v", err)
 			time.Sleep(time.Second)
 			continue
 		}
@@ -54,13 +59,20 @@ func serveGripper(in *Gripper) {
 			n, err := port.Read(buf)
 			if err != nil {
 				if err != io.EOF {
-					fmt.Println("Error reading from serial port: ", err)
+					log.Println("Error reading from serial port: ", err)
+					in.connected = false
 					port.Close()
 					break
 				}
 			} else {
+				in.connected = true
 				buf = buf[:n]
 				color.Yellow("rx: [%s]\n", strings.Trim(string(buf), "\r\n"))
+			}
+
+			if in.tosend != "" {
+				port.Write([]byte(in.tosend))
+				in.tosend = ""
 			}
 		}
 	}

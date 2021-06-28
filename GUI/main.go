@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"log"
 	"math"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -12,9 +14,9 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-
-	fatih "github.com/fatih/color"
 )
+
+var gripper *Gripper
 
 type fingerPos struct {
 	index  int
@@ -149,7 +151,7 @@ func fingerBar(in fingerPos) fyne.CanvasObject {
 }
 
 func main() {
-	gripper := NewGripper()
+	gripper = NewGripper()
 
 	myApp := app.New()
 	myWindow := myApp.NewWindow("ALARIS Gripper Control")
@@ -178,14 +180,43 @@ func main() {
 	resetButton := widget.NewButton("reset", reset)
 	buttons := container.New(&maxVbox{}, resetButton, stopButton, sendButton)
 
-	withlobar := container.New(layout.NewVBoxLayout(), nnewcont, buttons)
+	statusText := binding.NewString()
+	listofdevices := testPorts()
+	statusText.Set(fmt.Sprintf("Choose UART device (%d found)", len(listofdevices)))
+	connection_status := widget.NewLabelWithData(statusText)
+	combo := widget.NewSelect(listofdevices, func(value string) {
+		gripper.options.PortName = "/dev/" + value
+		connection_status.Text = "Connecting..."
+	})
+	go fetchUART(gripper, statusText, combo)
+	topbuttons := container.New(&maxVbox{}, connection_status, combo)
+
+	withlobar := container.New(layout.NewVBoxLayout(), topbuttons, nnewcont, buttons)
 
 	go serveGripper(gripper)
 
 	myWindow.SetContent(withlobar)
 	myWindow.ShowAndRun()
+}
 
-	fatih.Cyan("it reaches")
+func fetchUART(in *Gripper, status binding.String, combo *widget.Select) {
+	for {
+		time.Sleep(time.Millisecond * 400)
+		if in.options.PortName == "placeholder" {
+			listofdevices := testPorts()
+			status.Set(fmt.Sprintf("Choose UART device (%d found)", len(listofdevices)))
+
+			combo.Options = listofdevices
+			log.Printf("%v", listofdevices)
+		} else {
+			if in.connected {
+				status.Set("Connected")
+			} else {
+				status.Set("Disconnected")
+			}
+			// continue
+		}
+	}
 }
 
 func send() {}
@@ -195,5 +226,6 @@ func reset() {}
 func stop() {}
 
 func subCircleTab() {
+	gripper.tosend = "5"
 	fmt.Printf("subcucle\n")
 }
