@@ -82,5 +82,5 @@ func generateCircle(in []fingerPos) fyne.CanvasObject {
 		subcircles[0], subcircles[1], subcircles[2], subcircles[3],
 		subcircles[4], subcircles[5], subcircles[6], subcircles[7])
 
-	return fyne.NewContainerWithLayout(&fixed300{}, content)
+	return container.New(&fixed300{}, content)
 }
