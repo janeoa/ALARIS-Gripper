@@ -17,8 +17,8 @@ type fingerPos struct {
 	index  int
 	pos    int
 	active bool
-	A      float64
-	B      float64
+	A      int
+	B      int
 }
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	myApp := app.New()
 	myWindow := myApp.NewWindow("ALARIS Gripper Control")
 
-	fingers := []fingerPos{{0, 0, true, 50, 0}, {1, 4, true, 50, 0}}
+	fingers := []fingerPos{{0, 0, true, 50, 0}, {1, 4, false, 50, 0}}
 	newcont := container.NewWithoutLayout(generateCircle(fingers))
 
 	var fingerWidged []fyne.CanvasObject
@@ -38,9 +38,7 @@ func main() {
 	}
 	fingerBarContainer := container.New(layout.NewVBoxLayout(), fingerWidged...)
 
-	absposBar := container.NewWithoutLayout(fingerBarContainer)
-
-	nnewcont := container.New(layout.NewHBoxLayout(), fingerList(), newcont, absposBar)
+	centercontwithoutline := container.New(layout.NewHBoxLayout(), fingerList(), newcont)
 
 	sendButton := widget.NewButton("send", send)
 	stopButton := widget.NewButton("stop", stop)
@@ -59,7 +57,7 @@ func main() {
 	go sendUART(gripper)
 	topbuttons := container.New(&maxVbox{}, connection_status, combo)
 
-	withlobar := container.New(layout.NewVBoxLayout(), topbuttons, nnewcont, buttons)
+	withlobar := container.New(layout.NewBorderLayout(topbuttons, buttons, centercontwithoutline, nil), topbuttons, buttons, centercontwithoutline, fingerBarContainer)
 
 	go serveGripper(gripper)
 
