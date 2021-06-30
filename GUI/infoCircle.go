@@ -10,6 +10,17 @@ import (
 	"fyne.io/fyne/v2/container"
 )
 
+type fixed300 struct {
+}
+
+func (d *fixed300) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	return fyne.NewSize(325, 300)
+}
+
+func (d *fixed300) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
+
+}
+
 func generateCircle(in []fingerPos) fyne.CanvasObject {
 	text1 := canvas.NewText("Text Object", color.RGBA{120, 0, 0, 255})
 	text1.Alignment = fyne.TextAlignTrailing
@@ -71,5 +82,5 @@ func generateCircle(in []fingerPos) fyne.CanvasObject {
 		subcircles[0], subcircles[1], subcircles[2], subcircles[3],
 		subcircles[4], subcircles[5], subcircles[6], subcircles[7])
 
-	return content
+	return fyne.NewContainerWithLayout(&fixed300{}, content)
 }
