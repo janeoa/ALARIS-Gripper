@@ -26,11 +26,9 @@ func main() {
 
 	myApp := app.New()
 	myWindow := myApp.NewWindow("ALARIS Gripper Control")
-	myWindow.Resize(fyne.NewSize(900, 300))
 
-	fingers := []fingerPos{{0, 0, false, 50, 0}, {1, 4, true, 50, 0}}
+	fingers := []fingerPos{{0, 0, true, 50, 0}, {1, 4, true, 50, 0}}
 	newcont := container.NewWithoutLayout(generateCircle(fingers))
-	newcont.Resize(fyne.NewSize(300, 300))
 
 	var fingerWidged []fyne.CanvasObject
 	for _, v := range fingers {
@@ -41,8 +39,6 @@ func main() {
 	fingerBarContainer := container.New(layout.NewVBoxLayout(), fingerWidged...)
 
 	absposBar := container.NewWithoutLayout(fingerBarContainer)
-	fingerBarContainer.Move(fyne.NewPos(300, 0))
-	fingerBarContainer.Resize(fyne.NewSize(400, 300))
 
 	nnewcont := container.New(layout.NewHBoxLayout(), fingerList(), newcont, absposBar)
 
