@@ -29,7 +29,12 @@ void setup() {
   }
   char msg[50];
   sprintf(msg, "foundSlaves: %d%d%d%d%d%d%d%d\r\n", foundSlaves[0],foundSlaves[1],foundSlaves[2],foundSlaves[3],foundSlaves[4],foundSlaves[5],foundSlaves[6],foundSlaves[7]);
-  Serial.println(msg);
+  
+
+  for (int i=0; i<3;i++){
+    Serial.println(msg);
+    delay(150);
+  }
 }
 
 
@@ -45,8 +50,14 @@ void loop() {
     int a = -1,b = -1;
     char msg[50];
     bool checked = false;
-    
-    if(strstr(readbuffer, " ")>0){
+
+    if(strstr(readbuffer, "slC")){
+      sprintf(msg, "foundSlaves: %d%d%d%d%d%d%d%d\r\n", foundSlaves[0],foundSlaves[1],foundSlaves[2],foundSlaves[3],foundSlaves[4],foundSlaves[5],foundSlaves[6],foundSlaves[7]);
+      for (int i=0; i<3;i++){
+        Serial.println(msg);
+        delay(500);
+      }
+    }else if(strstr(readbuffer, " ")>0){
       sscanf (readbuffer,"%d %d", &a,&b);
       if(a < 0 || a > 7 || b < 0 || b > 7){
         Serial.println("Enter okay number, please");  
