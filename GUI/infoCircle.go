@@ -21,7 +21,7 @@ func (d *fixed300) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) 
 
 }
 
-func generateCircle(in []fingerPos) fyne.CanvasObject {
+func generateCircle() *fyne.Container {
 	text1 := canvas.NewText("Text Object", color.RGBA{120, 0, 0, 255})
 	text1.Alignment = fyne.TextAlignTrailing
 	text1.TextStyle = fyne.TextStyle{Italic: true}
@@ -49,7 +49,7 @@ func generateCircle(in []fingerPos) fyne.CanvasObject {
 		tooltipA := canvas.NewText("", text.Color)
 		tooltipB := canvas.NewText("", text.Color)
 
-		for _, v := range in {
+		for _, v := range gripper.finger {
 			if v.pos == i {
 				subc.Move(fyne.NewPos(float32(newx-20), float32(newy-20)))
 				subc.Resize(fyne.NewSize(40, 40))

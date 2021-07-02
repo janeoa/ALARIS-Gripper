@@ -17,6 +17,7 @@ type Gripper struct {
 	connected bool
 	tosend    string
 	port      io.ReadWriteCloser
+	finger    []fingerPos
 }
 
 func NewGripper() *Gripper {
@@ -91,13 +92,13 @@ func serveGripper(in *Gripper) {
 	}
 }
 
-func sendUART(in *Gripper) {
+func sendUART() {
 	for {
 		time.Sleep(time.Millisecond * 200)
-		if in.tosend != "" {
-			color.Cyan("Writing %s\n", in.tosend)
-			in.port.Write([]byte(in.tosend + "\r\n"))
-			in.tosend = ""
+		if gripper.tosend != "" {
+			color.Cyan("Writing %s\n", gripper.tosend)
+			gripper.port.Write([]byte(gripper.tosend + "\r\n"))
+			gripper.tosend = ""
 		}
 	}
 }

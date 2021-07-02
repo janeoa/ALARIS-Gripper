@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -19,6 +20,16 @@ func (d *fingerBarContainer) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	w = 200
 	h = float32(len(objects)/3) * (objects[1].MinSize().Height)
 	return fyne.NewSize(w, h)
+}
+
+func generateFingerBarList() *fyne.Container {
+	var fingerWidged []fyne.CanvasObject
+	for _, v := range gripper.finger {
+		if v.active {
+			fingerWidged = append(fingerWidged, fingerBar(v))
+		}
+	}
+	return container.New(layout.NewVBoxLayout(), fingerWidged...)
 }
 
 func (d *fingerBarContainer) Layout(objects []fyne.CanvasObject, containerSize fyne.Size) {
