@@ -15,6 +15,7 @@ var myWindow fyne.Window
 type fingerPos struct {
 	index  int
 	pos    int
+	newPos int
 	active bool
 	A      int
 	B      int
@@ -26,7 +27,7 @@ func main() {
 	myApp := app.New()
 	myWindow = myApp.NewWindow("ALARIS Gripper Control")
 
-	fingers := []fingerPos{{0, 0, true, 50, 0}, {1, 4, false, 50, 0}}
+	fingers := []fingerPos{{0, 0, 0, false, 50, 0}, {1, 4, 4, false, 50, 0}}
 	gripper.finger = fingers
 
 	go sendUART()
@@ -40,13 +41,16 @@ func generateGUI() *fyne.Container {
 	circle = generateCircle()
 	fingerBarList = generateFingerBarList()
 
-	centercontwithoutline := container.New(layout.NewHBoxLayout(), fingerList(), circle)
+	// centercontwithoutline := container.New(layout.NewHBoxLayout(), fingerList())
+	fingerMoveList := fingerList()
 
 	buttons := bottom()
 
 	topbuttons := topBar()
 
-	return container.New(layout.NewBorderLayout(topbuttons, buttons, centercontwithoutline, nil), topbuttons, buttons, centercontwithoutline, fingerBarList)
+	// return container.New(layout.NewBorderLayout(topbuttons, buttons, fingerMoveList, circle), topbuttons, buttons, fingerMoveList, circle, fingerBarList)
+	onTheLeft := container.New(layout.NewHBoxLayout(), fingerMoveList, circle)
+	return container.New(layout.NewBorderLayout(topbuttons, buttons, onTheLeft, nil), topbuttons, buttons, onTheLeft, fingerBarList)
 }
 
 func send() {}
