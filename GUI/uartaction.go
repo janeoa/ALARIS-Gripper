@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -40,7 +39,7 @@ func fetchUART(status binding.String, combo *widget.Select) {
 			status.Set(fmt.Sprintf("Choose UART device (%d found)", len(listofdevices)))
 
 			combo.Options = listofdevices
-			log.Printf("%v", listofdevices)
+			// log.Printf("%v", listofdevices)
 		} else {
 			if gripper.connected {
 				status.Set("Connected")
