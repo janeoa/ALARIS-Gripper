@@ -13,7 +13,7 @@ import (
 )
 
 type fixed300 struct {
-	canvas fyne.CanvasObject
+	// canvas fyne.CanvasObject
 }
 
 func (d *fixed300) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -88,14 +88,22 @@ func generateCircle() *fyne.Container {
 	// var currx, curry, goalx, goaly float64
 	for _, v := range gripper.finger {
 		if v.pos != v.newPos {
-			arrowbone := canvas.NewLine(color.RGBA{255, 0, 0, 50})
+			arrowColor := color.RGBA{255, 0, 0, 50}
+			newPosIsValid := validateNewPos()
+			log.Printf("the newPosIsValid is %v", newPosIsValid)
+			if newPosIsValid {
+				arrowColor = color.RGBA{0, 255, 0, 50}
+			}
+			// log.Printf("the newPosIsValid is %v", newPosIsValid)
+
+			arrowbone := canvas.NewLine(arrowColor)
 			arrowbone.Position1.X = float32(150 + math.Cos((360.0/8.0*float64(v.pos))/180.0*math.Pi)*125)
 			arrowbone.Position1.Y = float32(150 + math.Sin((360.0/8.0*float64(v.pos))/180.0*math.Pi)*125)
 
 			arrowbone.Position2.X = float32(150 + math.Cos((360.0/8.0*float64(v.newPos))/180.0*math.Pi)*125)
 			arrowbone.Position2.Y = float32(150 + math.Sin((360.0/8.0*float64(v.newPos))/180.0*math.Pi)*125)
 
-			log.Printf("%v", arrowbone.Position2)
+			// log.Printf("%v", arrowbone.Position2)
 
 			p1 := mgl32.Vec2{arrowbone.Position1.X, arrowbone.Position1.Y}
 			p2 := mgl32.Vec2{arrowbone.Position2.X, arrowbone.Position2.Y}
@@ -103,14 +111,20 @@ func generateCircle() *fyne.Container {
 			vec1 := p2.Sub(p1)
 			nvec1 := vec1.Normalize()
 
+			arrowbone.Position2.X -= nvec1.X() * 20
+			arrowbone.Position2.Y -= nvec1.Y() * 20
+
+			arrowbone.Position1.X += nvec1.X() * 30
+			arrowbone.Position1.Y += nvec1.Y() * 30
+
 			degInPi := 160 * math.Pi / 180
 			px := float32(nvec1.X()*float32(math.Cos(degInPi)) - nvec1.Y()*float32(math.Sin(degInPi)))
 			py := float32(nvec1.X()*float32(math.Sin(degInPi)) + nvec1.Y()*float32(math.Cos(degInPi))) // x*sn + y*cs
 			pp := mgl32.Vec2{px, py}
 
-			arrowSid1 := canvas.NewLine(color.RGBA{255, 0, 0, 255})
-			arrowSid1.Position1.X = arrowbone.Position2.X - nvec1.X()*10
-			arrowSid1.Position1.Y = arrowbone.Position2.Y - nvec1.Y()*10
+			arrowSid1 := canvas.NewLine(arrowColor)
+			arrowSid1.Position1.X = arrowbone.Position2.X
+			arrowSid1.Position1.Y = arrowbone.Position2.Y
 
 			arrowSid1.Position2.X = arrowSid1.Position1.X + pp.X()*10
 			arrowSid1.Position2.Y = arrowSid1.Position1.Y + pp.Y()*10
@@ -120,9 +134,9 @@ func generateCircle() *fyne.Container {
 			py = float32(nvec1.X()*float32(math.Sin(degInPi)) + nvec1.Y()*float32(math.Cos(degInPi))) // x*sn + y*cs
 			pp = mgl32.Vec2{px, py}
 
-			arrowSid2 := canvas.NewLine(color.RGBA{255, 0, 0, 255})
-			arrowSid2.Position1.X = arrowbone.Position2.X - nvec1.X()*10
-			arrowSid2.Position1.Y = arrowbone.Position2.Y - nvec1.Y()*10
+			arrowSid2 := canvas.NewLine(arrowColor)
+			arrowSid2.Position1.X = arrowbone.Position2.X
+			arrowSid2.Position1.Y = arrowbone.Position2.Y
 
 			arrowSid2.Position2.X = arrowSid1.Position1.X + pp.X()*10
 			arrowSid2.Position2.Y = arrowSid1.Position1.Y + pp.Y()*10
@@ -134,21 +148,63 @@ func generateCircle() *fyne.Container {
 	return container.New(&fixed300{}, content)
 }
 
-func (c *fixed300) render() *fyne.Container {
-	return generateCircle()
+func validateNewPos() bool {
+	for _, v := range generateArrows() {
+		if v > 1 {
+			return false
+		}
+	}
+
+	return true
 }
 
-func Show(win fyne.Window) fyne.CanvasObject {
-	circle := &fixed300{}
-	//clockWindow.SetOnClosed(func() {
-	//	clock.stop = true
-	//})
+func generateArrows() []int {
+	mapp := []int{0, 0, 0, 0, 0, 0, 0, 0}
+	for _, v := range gripper.finger {
+		if v.pos == v.newPos {
+			mapp[v.pos]++
+			continue
+		}
+		index := v.pos
+		mapp[index]++
+		for {
+			if is_next_on_right(v.pos, v.newPos) {
+				index++
+				if index > 7 {
+					index -= 8
+				}
+			} else {
+				index--
+				if index < 0 {
+					index += 8
+				}
+			}
 
-	content := circle.render()
-	// go circle.animate(content)
+			mapp[index]++
+			if index == v.newPos {
+				break
+			}
 
-	listener := make(chan fyne.Settings)
-	fyne.CurrentApp().Settings().AddChangeListener(listener)
+			// fmt.Printf("%v\n", mapp)
+		}
 
-	return content
+	}
+	return mapp
+}
+
+func dirCrossesZero(pos int, newPos int) bool {
+	return (is_next_on_right(pos, newPos) && pos > newPos) || (!is_next_on_right(pos, newPos) && newPos > pos)
+}
+
+func is_next_on_right(prev int, curr int) bool {
+	is_right := false
+
+	delta := curr - prev
+	if delta > 0 && delta < 4 {
+		is_right = true
+	}
+	if delta < -4 && delta > -8 {
+		is_right = true
+	}
+	return is_right
 }
