@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"log"
 	"math"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type fixed300 struct {
@@ -81,6 +83,52 @@ func generateCircle() *fyne.Container {
 	content := container.NewWithoutLayout(circ,
 		subcircles[0], subcircles[1], subcircles[2], subcircles[3],
 		subcircles[4], subcircles[5], subcircles[6], subcircles[7])
+
+	// var currx, curry, goalx, goaly float64
+	for _, v := range gripper.finger {
+		if v.pos != v.newPos {
+			arrowbone := canvas.NewLine(color.RGBA{255, 0, 0, 50})
+			arrowbone.Position1.X = float32(150 + math.Cos((360.0/8.0*float64(v.pos))/180.0*math.Pi)*125)
+			arrowbone.Position1.Y = float32(150 + math.Sin((360.0/8.0*float64(v.pos))/180.0*math.Pi)*125)
+
+			arrowbone.Position2.X = float32(150 + math.Cos((360.0/8.0*float64(v.newPos))/180.0*math.Pi)*125)
+			arrowbone.Position2.Y = float32(150 + math.Sin((360.0/8.0*float64(v.newPos))/180.0*math.Pi)*125)
+
+			log.Printf("%v", arrowbone.Position2)
+
+			p1 := mgl32.Vec2{arrowbone.Position1.X, arrowbone.Position1.Y}
+			p2 := mgl32.Vec2{arrowbone.Position2.X, arrowbone.Position2.Y}
+
+			vec1 := p2.Sub(p1)
+			nvec1 := vec1.Normalize()
+
+			degInPi := 160 * math.Pi / 180
+			px := float32(nvec1.X()*float32(math.Cos(degInPi)) - nvec1.Y()*float32(math.Sin(degInPi)))
+			py := float32(nvec1.X()*float32(math.Sin(degInPi)) + nvec1.Y()*float32(math.Cos(degInPi))) // x*sn + y*cs
+			pp := mgl32.Vec2{px, py}
+
+			arrowSid1 := canvas.NewLine(color.RGBA{255, 0, 0, 255})
+			arrowSid1.Position1.X = arrowbone.Position2.X - nvec1.X()*10
+			arrowSid1.Position1.Y = arrowbone.Position2.Y - nvec1.Y()*10
+
+			arrowSid1.Position2.X = arrowSid1.Position1.X + pp.X()*10
+			arrowSid1.Position2.Y = arrowSid1.Position1.Y + pp.Y()*10
+
+			degInPi = 200 * math.Pi / 180
+			px = float32(nvec1.X()*float32(math.Cos(degInPi)) - nvec1.Y()*float32(math.Sin(degInPi)))
+			py = float32(nvec1.X()*float32(math.Sin(degInPi)) + nvec1.Y()*float32(math.Cos(degInPi))) // x*sn + y*cs
+			pp = mgl32.Vec2{px, py}
+
+			arrowSid2 := canvas.NewLine(color.RGBA{255, 0, 0, 255})
+			arrowSid2.Position1.X = arrowbone.Position2.X - nvec1.X()*10
+			arrowSid2.Position1.Y = arrowbone.Position2.Y - nvec1.Y()*10
+
+			arrowSid2.Position2.X = arrowSid1.Position1.X + pp.X()*10
+			arrowSid2.Position2.Y = arrowSid1.Position1.Y + pp.Y()*10
+
+			content = container.NewWithoutLayout(arrowbone, content, arrowSid1, arrowSid2)
+		}
+	}
 
 	return container.New(&fixed300{}, content)
 }

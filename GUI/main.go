@@ -27,7 +27,7 @@ func main() {
 	myApp := app.New()
 	myWindow = myApp.NewWindow("ALARIS Gripper Control")
 
-	fingers := []fingerPos{{0, 0, 0, false, 50, 0}, {1, 4, 4, false, 50, 0}}
+	fingers := []fingerPos{{0, 0, 0, false, 50, 0}, {1, 4, 6, false, 50, 0}}
 	gripper.finger = fingers
 
 	go sendUART()
