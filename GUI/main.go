@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"github.com/fatih/color"
 )
 
 var gripper *Gripper
@@ -38,6 +39,8 @@ func main() {
 }
 
 func generateGUI() *fyne.Container {
+	color.Yellow("regenerating the GUI\n")
+
 	circle = generateCircle()
 	fingerBarList = generateFingerBarList()
 

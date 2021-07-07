@@ -52,14 +52,18 @@ func fingerInfoItem(id int, active bool) fyne.CanvasObject {
 	newpos.OnChanged = func(s string) {
 		if strings.ContainsAny(s, "01234567") && len(s) == 1 {
 			log.Printf("new pos for %d is %s", id, s)
-			npi, err := strconv.ParseInt("-42", 10, 64)
+			npi, err := strconv.ParseInt(s, 10, 64)
 			// npi, err := fmt.Scanf("%d", s)
 			if err != nil {
 				fmt.Println("ERROR ON SCANF")
 			}
 			if npi >= 0 && npi < 8 {
 				gripper.finger[id].newPos = int(npi)
-				log.Printf("new pos for %d is %d", id, npi)
+				// log.Printf("new pos for %d is %d", id, npi)
+				myWindow.SetContent(generateGUI())
+				// circle.Refresh()
+				// log.Printf("refreshed")
+
 			}
 		}
 		if len(s) > 1 {

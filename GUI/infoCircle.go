@@ -13,6 +13,7 @@ import (
 )
 
 type fixed300 struct {
+	canvas fyne.CanvasObject
 }
 
 func (d *fixed300) MinSize(objects []fyne.CanvasObject) fyne.Size {
@@ -131,4 +132,23 @@ func generateCircle() *fyne.Container {
 	}
 
 	return container.New(&fixed300{}, content)
+}
+
+func (c *fixed300) render() *fyne.Container {
+	return generateCircle()
+}
+
+func Show(win fyne.Window) fyne.CanvasObject {
+	circle := &fixed300{}
+	//clockWindow.SetOnClosed(func() {
+	//	clock.stop = true
+	//})
+
+	content := circle.render()
+	// go circle.animate(content)
+
+	listener := make(chan fyne.Settings)
+	fyne.CurrentApp().Settings().AddChangeListener(listener)
+
+	return content
 }
