@@ -13,12 +13,27 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+func dummyFunc() {}
+
 func fingerList() fyne.CanvasObject {
 	var fingers []fyne.CanvasObject
 	for i := 0; i < len(gripper.finger); i++ {
 		fingers = append(fingers, fingerInfoItem(i, gripper.finger[i].active))
 	}
-	return container.New(layout.NewVBoxLayout(), fingers...)
+
+	// var autoRouteButtons []fyne.CanvasObject
+
+	// fingersToRoute = []int{}
+	// for i := 0; i < 8; i++ {
+	// 	buttonAR := widget.NewButton(fmt.Sprintf("%d", i), nil)
+	// 	buttonAR.OnTapped = dummyFunc //autoRouteButtonPressed(id, buttonAR)
+	// 	autoRouteButtons = append(autoRouteButtons, buttonAR)
+	// }
+	// autoRouteButtonContainer := container.New(layout.NewHBoxLayout(), autoRouteButtons...)
+
+	fingerss := container.New(layout.NewVBoxLayout(), fingers...)
+
+	return fingerss // container.New(layout.NewVBoxLayout(), autoRouteButtonContainer, fingerss)
 }
 
 func fingerInfoItem(id int, active bool) fyne.CanvasObject {
@@ -72,10 +87,43 @@ func fingerInfoItem(id int, active bool) fyne.CanvasObject {
 		}
 	}
 
-	dummyText := widget.NewLabel(" ")
+	// dummyText := widget.NewLabel(" ")
 
 	line1 := container.New(layout.NewHBoxLayout(), button, name, newpos)
-	line2 := container.New(layout.NewCenterLayout(), dummyText)
+	// line2 := container.New(layout.NewCenterLayout(), dummyText)
 
-	return container.New(layout.NewVBoxLayout(), widget.NewSeparator(), line1, line2)
+	return container.New(layout.NewVBoxLayout(), widget.NewSeparator(), line1)
+}
+
+func autoRouteButtonPressed(id int, button *widget.Button) {
+
+	if contains(fingersToRoute, id) {
+		findAndDelete(fingersToRoute, id)
+		button.SetText(fmt.Sprintf("%d", id))
+	} else {
+		fingersToRoute = append(fingersToRoute, id)
+		button.SetText("✓")
+	}
+	log.Printf("%v", fingersToRoute)
+
+}
+
+func contains(arr []int, in int) bool {
+	for _, a := range arr {
+		if a == in {
+			return true
+		}
+	}
+	return false
+}
+
+func findAndDelete(s []int, item int) []int {
+	index := 0
+	for _, i := range s {
+		if i != item {
+			s[index] = i
+			index++
+		}
+	}
+	return s[:index]
 }
