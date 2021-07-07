@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -41,7 +42,7 @@ func NewGripper() *Gripper {
 }
 
 func serveGripper(in *Gripper) {
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(time.Millisecond * 30)
 	for {
 		if in.options.PortName == "placeholder" {
 			time.Sleep(time.Second)
@@ -133,5 +134,10 @@ func parseRX(in string) {
 	color.Yellow("parsing {%s}", in)
 	if strings.Contains(in, "foundSlaves") {
 		color.Green("found slaves {%s}", strings.Trim(in, "\r\n"))
+		slaves := []int{0, 0, 0, 0, 0, 0, 0, 0}
+		_, err := fmt.Scanf(strings.Trim(in, "\r\n"), "foundSlaves: %d%d%d%d%d%d%d%d", slaves[0])
+		if err != nil {
+			color.Red("Error: %v", err)
+		}
 	}
 }

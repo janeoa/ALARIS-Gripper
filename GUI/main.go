@@ -4,7 +4,9 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/widget"
 	"github.com/fatih/color"
 )
 
@@ -12,6 +14,8 @@ var gripper *Gripper
 var fingerBarList *fyne.Container
 var circle *fyne.Container
 var myWindow fyne.Window
+var combo *widget.Select
+var statusText binding.String
 
 var fingersToRoute []bool
 
@@ -42,6 +46,7 @@ func main() {
 
 	go sendUART()
 	go serveGripper(gripper)
+	go fetchUART()
 
 	myWindow.SetContent(generateGUI())
 	myWindow.ShowAndRun()

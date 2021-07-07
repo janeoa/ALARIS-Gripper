@@ -12,15 +12,17 @@ import (
 
 func topBar() *fyne.Container {
 
-	statusText := binding.NewString()
-	listofdevices := testPorts()
-	statusText.Set(fmt.Sprintf("Choose UART device (%d found)", len(listofdevices)))
+	statusText = binding.NewString()
+	statusText.Set("Connected")
 	connection_status := widget.NewLabelWithData(statusText)
-	combo := widget.NewSelect(listofdevices, func(value string) {
-		gripper.options.PortName = "/dev/" + value
-		connection_status.Text = "Connecting..."
-	})
-	go fetchUART(statusText, combo)
+	if !gripper.connected {
+		listofdevices := testPorts()
+
+		combo = widget.NewSelect(listofdevices, func(value string) {
+			gripper.options.PortName = "/dev/" + value
+			connection_status.Text = "Connecting..."
+		})
+	}
 	return container.New(&maxVbox{}, connection_status, combo)
 }
 
@@ -31,20 +33,20 @@ func bottom() *fyne.Container {
 	return container.New(&maxVbox{}, resetButton, stopButton, sendButton)
 }
 
-func fetchUART(status binding.String, combo *widget.Select) {
+func fetchUART() {
 	for {
 		time.Sleep(time.Millisecond * 400)
 		if gripper.options.PortName == "placeholder" {
 			listofdevices := testPorts()
-			status.Set(fmt.Sprintf("Choose UART device (%d found)", len(listofdevices)))
+			statusText.Set(fmt.Sprintf("Choose UART device (%d found)", len(listofdevices)))
 
 			combo.Options = listofdevices
 			// log.Printf("%v", listofdevices)
 		} else {
 			if gripper.connected {
-				status.Set("Connected")
+				statusText.Set("Connected")
 			} else {
-				status.Set("Disconnected")
+				statusText.Set("Disconnected")
 			}
 			// continue
 		}
