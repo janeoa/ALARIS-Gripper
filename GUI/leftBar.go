@@ -13,7 +13,27 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func dummyFunc() {}
+func generateFingerWithFunc(i int) fyne.CanvasObject {
+	buttonAR := widget.NewButton(fmt.Sprintf("%d", i), nil)
+	buttonAR.OnTapped = func() { autoRouteButtonPressed(i, buttonAR) }
+	return buttonAR
+}
+
+func autoContainer() fyne.CanvasObject {
+	var autoRouteButtons []fyne.CanvasObject
+
+	for i := 0; i < 8; i++ {
+		label := widget.NewLabel(fmt.Sprintf("%d", i))
+		autoRouteButtons = append(autoRouteButtons, label)
+	}
+	for i := 0; i < 8; i++ {
+		autoRouteButtons = append(autoRouteButtons, generateFingerWithFunc(i))
+	}
+
+	autoRouteButtonContainer := container.New(layout.NewGridLayout(8), autoRouteButtons...)
+
+	return autoRouteButtonContainer
+}
 
 func fingerList() fyne.CanvasObject {
 	var fingers []fyne.CanvasObject
@@ -21,19 +41,9 @@ func fingerList() fyne.CanvasObject {
 		fingers = append(fingers, fingerInfoItem(i, gripper.finger[i].active))
 	}
 
-	// var autoRouteButtons []fyne.CanvasObject
-
-	// fingersToRoute = []int{}
-	// for i := 0; i < 8; i++ {
-	// 	buttonAR := widget.NewButton(fmt.Sprintf("%d", i), nil)
-	// 	buttonAR.OnTapped = dummyFunc //autoRouteButtonPressed(id, buttonAR)
-	// 	autoRouteButtons = append(autoRouteButtons, buttonAR)
-	// }
-	// autoRouteButtonContainer := container.New(layout.NewHBoxLayout(), autoRouteButtons...)
-
 	fingerss := container.New(layout.NewVBoxLayout(), fingers...)
 
-	return fingerss // container.New(layout.NewVBoxLayout(), autoRouteButtonContainer, fingerss)
+	return fingerss //container.New(layout.NewVBoxLayout(), autoRouteButtonContainer, fingerss)
 }
 
 func fingerInfoItem(id int, active bool) fyne.CanvasObject {
@@ -96,34 +106,14 @@ func fingerInfoItem(id int, active bool) fyne.CanvasObject {
 }
 
 func autoRouteButtonPressed(id int, button *widget.Button) {
-
-	if contains(fingersToRoute, id) {
-		findAndDelete(fingersToRoute, id)
+	if fingersToRoute[id] {
+		// button.SetIcon(nil)
 		button.SetText(fmt.Sprintf("%d", id))
+		button.Resize(button.MinSize())
 	} else {
-		fingersToRoute = append(fingersToRoute, id)
-		button.SetText("✓")
+		button.SetText("*")
+		// button.SetIcon(theme.ConfirmIcon())
 	}
+	fingersToRoute[id] = !fingersToRoute[id]
 	log.Printf("%v", fingersToRoute)
-
-}
-
-func contains(arr []int, in int) bool {
-	for _, a := range arr {
-		if a == in {
-			return true
-		}
-	}
-	return false
-}
-
-func findAndDelete(s []int, item int) []int {
-	index := 0
-	for _, i := range s {
-		if i != item {
-			s[index] = i
-			index++
-		}
-	}
-	return s[:index]
 }

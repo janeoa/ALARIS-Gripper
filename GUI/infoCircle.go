@@ -192,9 +192,9 @@ func generateArrows() []int {
 	return mapp
 }
 
-func dirCrossesZero(pos int, newPos int) bool {
-	return (is_next_on_right(pos, newPos) && pos > newPos) || (!is_next_on_right(pos, newPos) && newPos > pos)
-}
+// func dirCrossesZero(pos int, newPos int) bool {
+// 	return (is_next_on_right(pos, newPos) && pos > newPos) || (!is_next_on_right(pos, newPos) && newPos > pos)
+// }
 
 func is_next_on_right(prev int, curr int) bool {
 	is_right := false

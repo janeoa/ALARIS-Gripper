@@ -13,7 +13,12 @@ var fingerBarList *fyne.Container
 var circle *fyne.Container
 var myWindow fyne.Window
 
-var fingersToRoute []int
+var fingersToRoute []bool
+
+var current_mode int
+
+const AUTO = 0
+const MANUAL = 1
 
 type fingerPos struct {
 	index  int
@@ -25,11 +30,13 @@ type fingerPos struct {
 }
 
 func main() {
+	current_mode = MANUAL
 	gripper = NewGripper()
 
 	myApp := app.New()
 	myWindow = myApp.NewWindow("ALARIS Gripper Control")
 
+	fingersToRoute = []bool{false, false, false, false, false, false, false, false}
 	fingers := []fingerPos{{0, 0, 0, false, 50, 0}, {1, 4, 4, false, 50, 0}, {2, 3, 3, false, 50, 0}}
 	gripper.finger = fingers
 
@@ -47,7 +54,13 @@ func generateGUI() *fyne.Container {
 	fingerBarList = generateFingerBarList()
 
 	// centercontwithoutline := container.New(layout.NewHBoxLayout(), fingerList())
-	fingerMoveList := fingerList()
+
+	var fingerMoveList fyne.CanvasObject
+	if current_mode == AUTO {
+		fingerMoveList = autoContainer()
+	} else {
+		fingerMoveList = fingerList()
+	}
 
 	buttons := bottom()
 
