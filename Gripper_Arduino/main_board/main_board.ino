@@ -8,7 +8,7 @@ const char*emtpybuff5 = "\0\0\0\0\0";
 
 Lights lights(pins);
 char readbuffer[INBUFFSIZE];
-bool foundSlaves[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+byte foundSlaves[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 void setup() {
   Serial.begin(115200);  // start serial for output
@@ -24,17 +24,27 @@ void setup() {
   for (byte i = 0; i < 8; i++) {
     Wire.beginTransmission(i);
     if (Wire.endTransmission() == 0) {
-      foundSlaves[i] = 1;
+      foundSlaves[i] = 4;
     }
   }
+  replyslC(3,50);
+}
+
+void replyslC(byte n, byte dl){
   char msg[50];
   sprintf(msg, "foundSlaves: %d%d%d%d%d%d%d%d\r\n", foundSlaves[0],foundSlaves[1],foundSlaves[2],foundSlaves[3],foundSlaves[4],foundSlaves[5],foundSlaves[6],foundSlaves[7]);
-  
-
-  for (int i=0; i<3;i++){
+  if(dl>1){
+    for (int i=0; i<n;i++){
+      Serial.println(msg);
+      delay(dl);
+    }
+  }else{
     Serial.println(msg);
-    delay(150);
   }
+}
+
+void replyslC(){
+    replyslC(1,0);
 }
 
 
@@ -52,11 +62,7 @@ void loop() {
     bool checked = false;
 
     if(strstr(readbuffer, "slC")){
-      sprintf(msg, "foundSlaves: %d%d%d%d%d%d%d%d\r\n", foundSlaves[0],foundSlaves[1],foundSlaves[2],foundSlaves[3],foundSlaves[4],foundSlaves[5],foundSlaves[6],foundSlaves[7]);
-      for (int i=0; i<3;i++){
-        Serial.println(msg);
-        delay(500);
-      }
+      replyslC();
     }else if(strstr(readbuffer, " ")>0){
       sscanf (readbuffer,"%d %d", &a,&b);
       if(a < 0 || a > 7 || b < 0 || b > 7){
@@ -73,6 +79,7 @@ void loop() {
       }else{
         sprintf(msg, "Got: %d, its pin %d",a, pins[a]);
         lights.setLight(a);
+        foundSlaves[0] = a;
         checked = true;
       }
     }
@@ -90,6 +97,7 @@ void loop() {
       Wire.write(toFinger, 3);
       Wire.endTransmission();
     }
+    replyslC();
   }
 
   if(millis()-lastCall>250){
@@ -119,8 +127,8 @@ void checkFingerState(byte finger_id){
     memcpy((int*)&cc  , readbuf+6, 2);
     memcpy((int*)&dd  , readbuf+8, 2);
     char msg[20];
-    sprintf(msg,"%d\t%d\t%03d\t%d",aa,bb,cc,dd);
-    Serial.println(msg);
+//    sprintf(msg,"%d\t%d\t%03d\t%d",aa,bb,cc,dd);
+//    Serial.println(msg);
 //    dexDump(readbuf, bufflen);
   }
   

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -42,6 +44,7 @@ func main() {
 
 	fingersToRoute = []bool{false, false, false, false, false, false, false, false}
 	fingers := []fingerPos{{0, 0, 0, false, 50, 0}, {1, 4, 4, false, 50, 0}, {2, 3, 3, false, 50, 0}}
+	// fingers := []fingerPos{}
 	gripper.finger = fingers
 
 	go sendUART()
@@ -76,7 +79,17 @@ func generateGUI() *fyne.Container {
 	return container.New(layout.NewBorderLayout(topbuttons, buttons, onTheLeft, nil), topbuttons, buttons, onTheLeft, fingerBarList)
 }
 
-func send() {}
+func send() {
+	for _, v := range gripper.finger {
+		if v.pos != v.newPos {
+			gripper.tosend = fmt.Sprintf("%d", v.newPos)
+			v.pos = v.newPos
+			myWindow.SetContent(generateGUI())
+			break
+		}
+	}
+
+}
 
 func reset() {}
 

@@ -134,10 +134,23 @@ func parseRX(in string) {
 	color.Yellow("parsing {%s}", in)
 	if strings.Contains(in, "foundSlaves") {
 		color.Green("found slaves {%s}", strings.Trim(in, "\r\n"))
-		slaves := []int{0, 0, 0, 0, 0, 0, 0, 0}
-		_, err := fmt.Scanf(strings.Trim(in, "\r\n"), "foundSlaves: %d%d%d%d%d%d%d%d", slaves[0])
-		if err != nil {
-			color.Red("Error: %v", err)
+		// slaves := []int{0, 0, 0, 0, 0, 0, 0, 0}
+		runes := []rune(strings.Trim(in, "foundSlaves: \r\n"))
+
+		fmt.Printf("%v", runes)
+		if len(runes) != 8 {
+			log.Println("Slave cound doesnt match 8 pattern")
+			gripper.tosend = "slC"
+		} else {
+			gripper.finger = []fingerPos{}
+			for i, v := range runes {
+				if int(v-'0') != 0 {
+					gripper.finger = append(gripper.finger, fingerPos{
+						i, int(v - '0'), int(v - '0'), false, 50, 0,
+					})
+				}
+			}
+			myWindow.SetContent(generateGUI())
 		}
 	}
 }
