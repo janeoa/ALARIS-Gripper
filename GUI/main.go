@@ -12,6 +12,7 @@ import (
 	"github.com/fatih/color"
 )
 
+var newPosEntries []*widget.Entry
 var gripper *Gripper
 var fingerBarList *fyne.Container
 var circle *fyne.Container
@@ -91,6 +92,12 @@ func send() {
 
 }
 
-func reset() {}
+func reset() {
+	for i, v := range gripper.finger {
+		v.newPos = v.pos
+		newPosEntries[i].SetText(fmt.Sprintf("%d", v.pos))
+		myWindow.SetContent(generateGUI())
+	}
+}
 
 func stop() {}

@@ -73,6 +73,7 @@ func fingerInfoItem(id int, active bool) fyne.CanvasObject {
 	name := widget.NewLabel(fmt.Sprintf("#%d is at: %d, new = ", id, gripper.finger[id].pos))
 
 	newpos := widget.NewEntry()
+	newPosEntries = append(newPosEntries, newpos)
 	newpos.SetPlaceHolder(fmt.Sprintf("%d", gripper.finger[id].newPos))
 	newpos.OnChanged = func(s string) {
 		if strings.ContainsAny(s, "01234567") && len(s) == 1 {
