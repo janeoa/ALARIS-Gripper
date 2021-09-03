@@ -18,7 +18,9 @@ Motor::Motor(int pinA, int pinB, int pinE, int anal, int minp, int maxp){
 }
 
 void Motor::setGoal(int goal){
-  _goal = map(goal, 0, 100, _minp, _maxp);
+  if(0<=goal && goal<=100){
+    _goal = map(goal, 0, 100, _minp, _maxp);
+  }
 }
 
 void Motor::tick(){

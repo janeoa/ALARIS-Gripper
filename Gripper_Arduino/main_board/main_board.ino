@@ -60,8 +60,10 @@ void loop() {
     int a = -1,b = -1;
     char msg[50];
     bool checked = false;
-
-    if(strstr(readbuffer, "slC")){
+//    sprintf(msg, "Readbufis>>%s<<\n",readbuffer);
+//    Serial.println(msg);
+    
+    if(strstr(readbuffer, "slC")>0){
       replyslC();
     }else if(strstr(readbuffer, " ")>0){
       sscanf (readbuffer,"%d %d", &a,&b);
@@ -84,6 +86,7 @@ void loop() {
       }
     }
     Serial.println(msg);
+    msg[0] = '\0';
     memcpy(readbuffer, emtpybuff5, INBUFFSIZE);
     
     if(checked){
@@ -95,7 +98,7 @@ void loop() {
 //      dexDump(toFinger,3);
       Wire.beginTransmission(0);
       Wire.write(toFinger, 3);
-      Wire.endTransmission();
+      Wire.endTransmission(true);
     }
     replyslC();
   }

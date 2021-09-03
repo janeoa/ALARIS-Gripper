@@ -18,7 +18,7 @@ Motor   top(6, 7,  5, A1, 250, 410);
 Roller roll(8, 9, 10, A3);
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Wire.begin(0); 
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);

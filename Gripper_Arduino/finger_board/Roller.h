@@ -25,7 +25,9 @@ class Roller{
     void tick();
 
     void setGoal(byte goal){
-      if(goal!=curr) x = goal;
+      if(0<goal && goal<8){
+        if(goal!=curr) x = goal;
+      }
     };
 
     void printVars(){
