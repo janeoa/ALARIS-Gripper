@@ -27,7 +27,8 @@ func topBar() *fyne.Container {
 	}
 
 	refreshButton := widget.NewButtonWithIcon("", theme.ViewRefreshIcon(), func() {
-		gripper.tosend = "slC"
+		gripper.finger = []fingerPos{}
+		myWindow.SetContent(generateGUI())
 	})
 	return container.New(&maxVbox{}, container.New(layout.NewHBoxLayout(), connection_status, refreshButton), combo)
 }

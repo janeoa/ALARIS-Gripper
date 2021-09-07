@@ -112,6 +112,7 @@ func serveGripper(in *Gripper) {
 					if faults > 10 {
 						// for i := 0; i < 50; i++ {
 						color.Red("UART buffur Fault accured\n")
+						gripper.finger = []fingerPos{}
 						// }
 						break
 					}
@@ -222,29 +223,4 @@ func testPorts() []string {
 		}
 	}
 	return listofports
-}
-
-func parseRX(in string) {
-	color.Yellow("parsing {%s}", in)
-	if strings.Contains(in, "foundSlaves") {
-		color.Green("found slaves {%s}", strings.Trim(in, "\r\n"))
-		// slaves := []int{0, 0, 0, 0, 0, 0, 0, 0}
-		runes := []rune(strings.Trim(in, "foundSlaves: \r\n"))
-
-		fmt.Printf("%v", runes)
-		if len(runes) != 8 {
-			log.Println("Slave cound doesnt match 8 pattern")
-			gripper.tosend = "slC"
-		} else {
-			gripper.finger = []fingerPos{}
-			for i, v := range runes {
-				if int(v-'0') != 0 {
-					gripper.finger = append(gripper.finger, fingerPos{
-						i, int(v - '0'), int(v - '0'), false, 50, 0,
-					})
-				}
-			}
-			myWindow.SetContent(generateGUI())
-		}
-	}
 }
