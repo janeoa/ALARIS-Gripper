@@ -93,6 +93,7 @@ func generateCircle() *fyne.Container {
 			log.Printf("the newPosIsValid is %v", newPosIsValid)
 			if newPosIsValid {
 				arrowColor = color.RGBA{0, 255, 0, 50}
+
 			}
 			// log.Printf("the newPosIsValid is %v", newPosIsValid)
 

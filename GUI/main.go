@@ -36,6 +36,8 @@ type fingerPos struct {
 	B      int
 }
 
+// var commandStack []command
+
 func main() {
 	current_mode = MANUAL
 	gripper = NewGripper()
@@ -44,8 +46,8 @@ func main() {
 	myWindow = myApp.NewWindow("ALARIS Gripper Control")
 
 	fingersToRoute = []bool{false, false, false, false, false, false, false, false}
-	fingers := []fingerPos{{0, 0, 0, false, 50, 0}, {1, 4, 4, false, 50, 0}, {2, 3, 3, false, 50, 0}}
-	// fingers := []fingerPos{}
+	// fingers := []fingerPos{{0, 0, 0, false, 50, 0}, {1, 4, 4, false, 50, 0}, {2, 3, 3, false, 50, 0}}
+	fingers := []fingerPos{}
 	gripper.finger = fingers
 
 	go sendUART()
@@ -83,7 +85,13 @@ func generateGUI() *fyne.Container {
 func send() {
 	for _, v := range gripper.finger {
 		if v.pos != v.newPos {
-			gripper.tosend = fmt.Sprintf("%d", v.newPos)
+			// gripper.tosend = fmt.Sprintf("%d", v.newPos)
+			EasyTransferEncode(command{
+				byte(v.index),
+				byte(v.newPos),
+				byte(255),
+				byte(50),
+			})
 			v.pos = v.newPos
 			myWindow.SetContent(generateGUI())
 			break

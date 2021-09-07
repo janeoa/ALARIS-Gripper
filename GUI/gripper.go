@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"reflect"
 	"strings"
 	"time"
 
@@ -41,6 +42,8 @@ func NewGripper() *Gripper {
 	return gripper
 }
 
+const printUARTlogs = false
+
 func serveGripper(in *Gripper) {
 	time.Sleep(time.Millisecond * 30)
 	for {
@@ -59,10 +62,13 @@ func serveGripper(in *Gripper) {
 		// Make sure to close it later.
 		defer port.Close()
 
-		buf := []byte{}
+		// buf := []byte{}
+		rx_len := 0
+		faults := 0
+		buf := make([]byte, 2000)
 		for {
-			subbuff := make([]byte, 100)
-			n, err := port.Read(subbuff)
+			subbuff := make([]byte, 2000)
+			n, err := port.Read(buf)
 			if err != nil {
 				if err != io.EOF {
 					log.Println("Error reading from serial port: ", err)
@@ -74,22 +80,110 @@ func serveGripper(in *Gripper) {
 				in.connected = true
 				subbuff = subbuff[:n]
 				buf = append(buf, subbuff...)
-				color.Cyan("%s", hex.Dump(buf))
-				if strings.Contains(string(buf), "\r\n") {
-					subs := strings.Split(string(buf), "\r\n")
-					if len(subs) > 1 {
-						for i := 0; i < len(subs); i++ {
-							if len(subs[i]) > 1 {
-								color.Red("len(subs[i]): %d", len(subs[i]))
-								parseRX(subs[i])
+				if printUARTlogs {
+					fmt.Print(hex.Dump(buf[:40]))
+					fmt.Println("Rx: ", strings.TrimRight(hex.EncodeToString(buf), "0"))
+					fmt.Print("\n\n\n")
+				}
+				if rx_len == 0 && len(buf) >= 8 {
+					for i, v := range buf {
+						if v == 0x85 {
+							faults = 0
+							rx_len = int(buf[i+1])
+							if printUARTlogs {
+								color.Yellow("Data len is %d", rx_len)
+							}
+							if rx_len == 4 {
+								if printUARTlogs {
+									color.Green("Data len valid")
+								}
+								parseArduinoCommand(buf[i+2 : i+6])
+								buf = buf[i+6:]
+								rx_len = 0
+								break
+							} else {
+								color.Red("Data is not 4 bytes long (%d)", rx_len)
+								rx_len = 0
+								break
 							}
 						}
-						// buf = []byte(subs[len(subs)-1])
-						buf = []byte{}
+					}
+					faults++
+					if faults > 10 {
+						// for i := 0; i < 50; i++ {
+						color.Red("UART buffur Fault accured\n")
+						// }
+						break
 					}
 				}
 			}
 		}
+	}
+}
+
+type command struct {
+	id  byte
+	pos byte
+	rol byte
+	ang byte
+}
+
+func EasyTransferEncode(in command) {
+	size := reflect.TypeOf(in).Size()
+	CS := byte(size)
+	toOut := []byte{0x06, 0x85}
+	toOut = append(toOut, byte(size))
+
+	toOut = append(toOut, in.id)
+	CS ^= in.id
+	toOut = append(toOut, in.pos)
+	CS ^= in.pos
+	toOut = append(toOut, in.rol)
+	CS ^= in.rol
+	toOut = append(toOut, in.ang)
+	CS ^= in.ang
+
+	toOut = append(toOut, CS)
+	// if printUARTlogs {
+	color.Cyan("Writing %v bytes using EasyTransfer\n", toOut)
+	// }
+	gripper.port.Write(toOut)
+}
+
+func parseArduinoCommand(in []byte) {
+	if printUARTlogs {
+		color.Cyan("Finger ID: %d\nroll: \t%d\nrott: \t%d\n", in[0], in[1], in[2])
+	}
+	updated := false
+	for i, v := range gripper.finger {
+		if v.index == int(in[0]) {
+			if v.pos != int(in[1]) {
+				color.Cyan("ID: %d|\t\t%d->%d\n", v.index, v.pos, int(in[1]))
+				gripper.finger[i].pos = int(in[1])
+				myWindow.SetContent(generateGUI())
+			}
+			updated = true
+		}
+	}
+	if !updated {
+		gripper.finger = append(gripper.finger, fingerPos{
+			index:  int(in[0]),
+			pos:    int(in[1]),
+			newPos: int(in[1]),
+			active: false,
+			A:      50,
+			B:      50,
+		})
+		if int(in[2]) < 255 {
+			gripper.finger[len(gripper.finger)-1].A = int(in[2])
+			gripper.finger[len(gripper.finger)-1].B = int(in[3])
+		}
+		color.Cyan("new finger ID: %d, pos: %d\n", int(in[0]), int(in[1]))
+		myWindow.SetContent(generateGUI())
+	}
+
+	if printUARTlogs {
+		fmt.Println(gripper.finger)
 	}
 }
 
