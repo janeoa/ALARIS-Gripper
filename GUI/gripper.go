@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"fyne.io/fyne/v2/data/binding"
 	"github.com/fatih/color"
 	"github.com/jacobsa/go-serial/serial"
 )
@@ -146,7 +147,7 @@ func EasyTransferEncode(in command) {
 
 	toOut = append(toOut, CS)
 	// if printUARTlogs {
-	color.Cyan("Writing %v bytes using EasyTransfer\n", toOut)
+	color.Cyan("Writing %v, as %v bytes using EasyTransfer\n", in, toOut)
 	// }
 	gripper.port.Write(toOut)
 }
@@ -172,19 +173,18 @@ func parseArduinoCommand(in []byte) {
 			pos:    int(in[1]),
 			newPos: int(in[1]),
 			active: false,
-			A:      50,
-			B:      50,
+			A:      binding.NewFloat(),
+			B:      binding.NewFloat(),
 		})
 		if int(in[2]) < 255 {
-			gripper.finger[len(gripper.finger)-1].A = int(in[2])
-			gripper.finger[len(gripper.finger)-1].B = int(in[3])
+			gripper.finger[len(gripper.finger)-1].A.Set(float64((in[2])))
+			gripper.finger[len(gripper.finger)-1].B.Set(float64((in[3])))
+		} else {
+			gripper.finger[len(gripper.finger)-1].A.Set(50)
+			gripper.finger[len(gripper.finger)-1].B.Set(0)
 		}
 		color.Cyan("new finger ID: %d, pos: %d\n", int(in[0]), int(in[1]))
 		myWindow.SetContent(generateGUI())
-	}
-
-	if printUARTlogs {
-		fmt.Println(gripper.finger)
 	}
 }
 
@@ -211,7 +211,7 @@ func testPorts() []string {
 		if strings.Contains(f.Name(), "tty") && len(f.Name()) > 8 && f.Name() != "tty.Bluetooth-Incoming-Port" && f.Name() != "tty.jane-CSRGAIA" && f.Name() != "tty.GalaxyBudsLive4589-GEAR" {
 			options := serial.OpenOptions{
 				PortName:        "/dev/" + f.Name(),
-				BaudRate:        19200,
+				BaudRate:        115200,
 				DataBits:        8,
 				StopBits:        1,
 				MinimumReadSize: 4,

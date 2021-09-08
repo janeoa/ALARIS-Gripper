@@ -32,8 +32,10 @@ type fingerPos struct {
 	pos    int
 	newPos int
 	active bool
-	A      int
-	B      int
+	// a      int
+	// b      int
+	A binding.Float
+	B binding.Float
 }
 
 // var commandStack []command
@@ -84,18 +86,22 @@ func generateGUI() *fyne.Container {
 
 func send() {
 	for _, v := range gripper.finger {
-		if v.pos != v.newPos {
-			// gripper.tosend = fmt.Sprintf("%d", v.newPos)
-			EasyTransferEncode(command{
-				byte(v.index),
-				byte(v.newPos),
-				byte(255),
-				byte(50),
-			})
-			v.pos = v.newPos
-			myWindow.SetContent(generateGUI())
-			break
+		A, _ := v.A.Get()
+		B, _ := v.B.Get()
+		// if v.pos != v.newPos || v.a != int(A) || v.b != int(B) {
+		// gripper.tosend = fmt.Sprintf("%d", v.newPos)
+
+		toSend := command{
+			byte(v.index),
+			byte(v.newPos),
+			byte(int(A)),
+			byte(int(B)),
 		}
+		EasyTransferEncode(toSend)
+		v.pos = v.newPos
+		myWindow.SetContent(generateGUI())
+		break
+		// }
 	}
 
 }

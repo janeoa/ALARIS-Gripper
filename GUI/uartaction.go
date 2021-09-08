@@ -51,7 +51,14 @@ func fetchUART() {
 			// log.Printf("%v", listofdevices)
 		} else {
 			if gripper.connected {
-				statusText.Set("Connected")
+				stat, _ := statusText.Get()
+				if stat == "Connected" {
+
+				} else {
+					gripper.finger = []fingerPos{}
+					myWindow.SetContent(generateGUI())
+					statusText.Set("Connected")
+				}
 			} else {
 				statusText.Set("Disconnected")
 			}
