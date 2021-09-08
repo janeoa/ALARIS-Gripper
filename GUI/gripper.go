@@ -208,7 +208,7 @@ func testPorts() []string {
 	}
 
 	for _, f := range files {
-		if strings.Contains(f.Name(), "tty") && len(f.Name()) > 8 && f.Name() != "tty.Bluetooth-Incoming-Port" && f.Name() != "tty.jane-CSRGAIA" {
+		if strings.Contains(f.Name(), "tty") && len(f.Name()) > 8 && f.Name() != "tty.Bluetooth-Incoming-Port" && f.Name() != "tty.jane-CSRGAIA" && f.Name() != "tty.GalaxyBudsLive4589-GEAR" {
 			options := serial.OpenOptions{
 				PortName:        "/dev/" + f.Name(),
 				BaudRate:        19200,
