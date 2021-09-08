@@ -39,6 +39,9 @@ class Roller{
     int getAnal(){return sensorValue;}
 
     int getGoal(){return prev*100+curr*10+state; }
+    byte  getPrev(){return prev;}
+    byte  getCurr(){return curr;}
+    byte getState(){return state;}
   private:
     byte enA,in1,in2,sensorPin;
 

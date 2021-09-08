@@ -41,5 +41,5 @@ int Motor::getPos(){
   _rawadc = analogRead(_anal);
 //  Serial.print("EPTA");
 //  Serial.println(_anal);
-  return _rawadc;
+  return map(_rawadc, 0, 100, _minp, _maxp);;
 }

@@ -13,8 +13,8 @@
 
 class Lights{
 public:
-  Lights(const int* pins){
-    _pins = new int[8];
+  Lights(const byte* pins){
+    _pins = new byte[8];
     for (int i(0); i < 8; i++) {
       this->_pins[i] = pins[i];
     }
@@ -22,14 +22,14 @@ public:
   virtual ~Lights(){
     delete[] _pins;
   }
-  int getPin(int pin){
+  byte getPin(byte pin){
     return _pins[pin];
   }
-  void setLight(int pin);
-  void setLight(int pina, int pinb);
+  void setLight(byte pin);
+  void setLight(byte pina, byte pinb);
   void tick();
 private:
-  int* _pins;
+  byte* _pins;
   byte _state = CALIBRATING;
 };
 

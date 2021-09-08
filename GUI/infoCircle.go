@@ -68,8 +68,11 @@ func generateCircle() *fyne.Container {
 					text.Color = color.RGBA{59, 50, 75, 255}
 				}
 
-				tooltipA = canvas.NewText(fmt.Sprintf("%02d", v.A), color.White)
-				tooltipB = canvas.NewText(fmt.Sprintf("%02d", v.B), color.White)
+				A, _ := v.A.Get()
+				B, _ := v.B.Get()
+
+				tooltipA = canvas.NewText(fmt.Sprintf("%02d", int(A)), color.White)
+				tooltipB = canvas.NewText(fmt.Sprintf("%02d", int(B)), color.White)
 
 				tooltipA.TextSize = 8
 				tooltipB.TextSize = 8

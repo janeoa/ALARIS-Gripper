@@ -4,21 +4,41 @@
 #include "Lights.h"
 
 EasyTransfer ETpcIN, ETpcOUT; 
+EasyTransferI2C ETucOUT; 
+EasyTransferI2C ETucIN;
 
 #define INBUFFSIZE 5
 
 
 struct PC_TO_MAIN{
   byte id;
-  byte roll;
-  byte rot;
-  byte close;
+  byte pos;
+  byte A;
+  byte B;
+};
+
+struct SEND_DATA_STRUCTURE{
+  byte pos;
+  byte A;
+  byte B;
+};
+
+struct RECIEVE_FINGER_STATE{
+  byte id;
+  byte pos;
+  byte npos;
+  byte state;
+  byte A;
+  byte B;
 };
 
 PC_TO_MAIN pcdata;
 PC_TO_MAIN mbdata;
 
-const int pins[] = {2,3,4,5,6,7,8,9};
+SEND_DATA_STRUCTURE ucdata;
+RECIEVE_FINGER_STATE fingerdata;
+
+const byte pins[] = {2,3,4,5,6,7,8,9};
 const char*emtpybuff5 = "\0\0\0\0\0";
 
 Lights lights(pins);
@@ -27,12 +47,15 @@ byte foundSlaves[8] = {255,255,255,255,255,255,255,255};
 
 void setup() {
   Serial.begin(115200);  // start serial for output
-  Serial.println("init");
+  Serial.println(F("init"));
   ETpcIN.begin(details(pcdata), &Serial);
   ETpcOUT.begin(details(mbdata), &Serial);
 //  Wire.setClock(10000);
-  Wire.begin();        // join i2c bus (address optional for master)
-  for (int i=0; i<8; i++){
+  Wire.begin(69);        // join i2c bus (address optional for master)
+  Wire.onReceive(receive);
+  ETucOUT.begin(details(ucdata), &Wire);
+  ETucIN.begin(details(fingerdata), &Wire);
+  for (byte i=0; i<8; i++){
     pinMode(pins[i], OUTPUT);
   }
 //
@@ -40,28 +63,43 @@ void setup() {
   for (byte i = 0; i < 8; i++) {
     Wire.beginTransmission(i);
     if (Wire.endTransmission() == 0) {
-      foundSlaves[i] = 4;
+      foundSlaves[i] = i;
     }
   }
 }
 
-long lastCall = millis();
+void receive(int numBytes) {}
+
+//long lastCall = millis();
 
 void loop() {
   if(ETpcIN.receiveData()){
-    foundSlaves[pcdata.id] = pcdata.roll;
+    foundSlaves[pcdata.id] = pcdata.pos;
+    ucdata.pos = pcdata.pos;
+    ucdata.A = pcdata.A;
+    ucdata.B = pcdata.B;
+    ETucOUT.sendData(pcdata.id);
   }
-  for(byte i=0; i<8; i++){
-    if(foundSlaves[i]<255){
-      mbdata.id = i;
-      mbdata.roll = foundSlaves[i];   
-      mbdata.rot = 255; 
-      ETpcOUT.sendData();
+  
+  if(ETucIN.receiveData()){
+    mbdata.id = fingerdata.id;
+    mbdata.pos = fingerdata.pos;   
+    mbdata.A = fingerdata.A;
+    mbdata.B = fingerdata.B;
+    ETpcOUT.sendData();
+  }else{
+    for(byte i=0; i<8; i++){
+      if(foundSlaves[i]<255){
+        mbdata.id = i;
+        mbdata.pos = foundSlaves[i];   
+        mbdata.A = 255; 
+        ETpcOUT.sendData();
+      }
     }
   }
 //  delay(250);
 }
-//
+
 //void checkFingerState(byte finger_id){
 //  
 //  const byte bufflen = 10;
@@ -84,10 +122,7 @@ void loop() {
 //    char msg[20];
 //  }
 //}
-//
-//void sendFingerState(int fingerID){
-//  
-//}
+
 
 //void dexDump(char *in, int len){
 //  Serial.print(">>");
