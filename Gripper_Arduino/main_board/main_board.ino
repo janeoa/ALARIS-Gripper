@@ -3,11 +3,9 @@
 #include <EasyTransferI2C.h>
 #include "Lights.h"
 
-EasyTransfer ETpcIN, ETpcOUT; 
-EasyTransferI2C ETucOUT; 
-EasyTransferI2C ETucIN;
-
-#define INBUFFSIZE 5
+EasyTransfer ETfromPCtoMain, ETfromMainToPC; 
+EasyTransferI2C ETfromMainToFinger; 
+EasyTransferI2C ETfromFingerToMain;
 
 
 struct PC_TO_MAIN{
@@ -17,46 +15,56 @@ struct PC_TO_MAIN{
   byte B;
 };
 
-struct SEND_DATA_STRUCTURE{
+struct MAIN_TO_PC{
+  byte id;
   byte pos;
+  byte A;
+  byte B;
+};
+
+struct SEND_DATA_STRUCTURE{
+  byte dir;
   byte A;
   byte B;
 };
 
 struct RECIEVE_FINGER_STATE{
   byte id;
-  byte pos;
-  byte npos;
-  byte state;
   byte A;
   byte B;
 };
 
-PC_TO_MAIN pcdata;
-PC_TO_MAIN mbdata;
+PC_TO_MAIN dataFromPC;
+MAIN_TO_PC dataToPC;
 
-SEND_DATA_STRUCTURE ucdata;
-RECIEVE_FINGER_STATE fingerdata;
+SEND_DATA_STRUCTURE dataToFinger;
+RECIEVE_FINGER_STATE dataFromFinger;
+bool is_next_on_right(int prev, int curr);
 
 const byte pins[] = {2,3,4,5,6,7,8,9};
-const char*emtpybuff5 = "\0\0\0\0\0";
 
 Lights lights(pins);
-char readbuffer[INBUFFSIZE];
 byte foundSlaves[8] = {255,255,255,255,255,255,255,255};
+byte prev[8] = {255,255,255,255,255,255,255,255};
 
 void setup() {
   Serial.begin(115200);  // start serial for output
   Serial.println(F("init"));
-  ETpcIN.begin(details(pcdata), &Serial);
-  ETpcOUT.begin(details(mbdata), &Serial);
+  ETfromPCtoMain.begin(details(dataFromPC), &Serial);
+  ETfromMainToPC.begin(details(dataToPC), &Serial);
 //  Wire.setClock(10000);
   Wire.begin(69);        // join i2c bus (address optional for master)
   Wire.onReceive(receive);
-  ETucOUT.begin(details(ucdata), &Wire);
-  ETucIN.begin(details(fingerdata), &Wire);
+  ETfromMainToFinger.begin(details(dataToFinger), &Wire);
+  ETfromFingerToMain.begin(details(dataFromFinger), &Wire);
   for (byte i=0; i<8; i++){
     pinMode(pins[i], OUTPUT);
+  }
+  delay(100);
+  for (byte i=0; i<8; i++){
+    digitalWrite(pins[i], HIGH);
+    delay(100);
+    digitalWrite(pins[i], LOW);
   }
 //
 ////  Serial.println("searching for slaves");
@@ -64,36 +72,56 @@ void setup() {
     Wire.beginTransmission(i);
     if (Wire.endTransmission() == 0) {
       foundSlaves[i] = i;
+      prev[i] = i;
     }
   }
 }
 
 void receive(int numBytes) {}
 
-//long lastCall = millis();
+byte slaveCallIndex = 0;
+unsigned long last = millis();
 
 void loop() {
-  if(ETpcIN.receiveData()){
-    foundSlaves[pcdata.id] = pcdata.pos;
-    ucdata.pos = pcdata.pos;
-    ucdata.A = pcdata.A;
-    ucdata.B = pcdata.B;
-    ETucOUT.sendData(pcdata.id);
+//  if(millis()-last>200){
+//    last = millis();
+//    dataToFinger.dir = 69;
+//    if(foundSlaves[slaveCallIndex] != 255){
+//      ETfromMainToFinger.sendData(slaveCallIndex);
+//    }
+//    slaveCallIndex = (slaveCallIndex==7)?0:slaveCallIndex+1;
+//  }
+  if(ETfromPCtoMain.receiveData()){
+    if(foundSlaves[dataFromPC.id] != dataFromPC.pos){
+      digitalWrite(pins[prev[dataFromPC.id]], LOW);
+      digitalWrite(pins[dataFromPC.pos], HIGH);
+      prev[dataFromPC.id] = dataFromPC.pos;
+      dataToFinger.dir = is_next_on_right(foundSlaves[dataFromPC.id], dataFromPC.pos)?0:1;//dataFromPC.pos;
+    }else{
+//      digitalWrite(pins[dataFromPC.pos], LOW);
+      dataToFinger.dir = 255;
+    }
+    
+    dataToFinger.A = dataFromPC.A;
+    dataToFinger.B = dataFromPC.B;
+    ETfromMainToFinger.sendData(dataFromPC.id);
+
+    foundSlaves[dataFromPC.id] = dataFromPC.pos;
   }
   
-  if(ETucIN.receiveData()){
-    mbdata.id = fingerdata.id;
-    mbdata.pos = fingerdata.pos;   
-    mbdata.A = fingerdata.A;
-    mbdata.B = fingerdata.B;
-    ETpcOUT.sendData();
+  if(ETfromFingerToMain.receiveData()){
+    dataToPC.id   = dataFromFinger.id;
+    dataToPC.pos  = foundSlaves[dataFromFinger.id];//dataFromFinger.pos;   
+    dataToPC.A    = dataFromFinger.A;
+    dataToPC.B    = dataFromFinger.B;
+    ETfromMainToPC.sendData();
   }else{
     for(byte i=0; i<8; i++){
       if(foundSlaves[i]<255){
-        mbdata.id = i;
-        mbdata.pos = foundSlaves[i];   
-        mbdata.A = 255; 
-        ETpcOUT.sendData();
+        dataToPC.id = i;
+        dataToPC.pos = foundSlaves[i];   
+        dataToPC.A = 255;
+        ETfromMainToPC.sendData();
       }
     }
   }
@@ -123,7 +151,14 @@ void loop() {
 //  }
 //}
 
-
+bool is_next_on_right(int prev, int curr){
+  bool is_right = false;
+  
+  int delta = curr - prev;
+  if(delta > 0 && delta < 4) is_right = true;
+  if(delta < -4 && delta > -8) is_right = true;
+  return is_right;
+}
 //void dexDump(char *in, int len){
 //  Serial.print(">>");
 //  for(int i=0; i<len; i++){

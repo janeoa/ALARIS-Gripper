@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "Motor.h"
 
-#define tolerance 100
+#define tolerance 20
 
 Motor::Motor(int pinA, int pinB, int pinE, int anal, int minp, int maxp){
   _pinA = pinA;
@@ -41,5 +41,5 @@ int Motor::getPos(){
   _rawadc = analogRead(_anal);
 //  Serial.print("EPTA");
 //  Serial.println(_anal);
-  return map(_rawadc, 0, 100, _minp, _maxp);;
+  return map(_rawadc, _minp, _maxp, 0, 100);;
 }

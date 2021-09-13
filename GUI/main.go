@@ -100,7 +100,7 @@ func send() {
 		EasyTransferEncode(toSend)
 		v.pos = v.newPos
 		myWindow.SetContent(generateGUI())
-		break
+		// break
 		// }
 	}
 

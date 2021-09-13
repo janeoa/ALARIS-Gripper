@@ -14,23 +14,36 @@
  * ADC1 - R1 (down)           top
  * ADC2 - R3 (closer to i2c)  mid
  */
-Motor   mid(2, 4,  3, A2, 500, 780);
-Motor   top(6, 7,  5, A1, 250, 410);
-Roller roll(8, 9, 10, A3);
 
-#define THIS_FINGER_ID 0
+/* finger 0 BEGIN */
+//Motor   mid(2, 4,  3, A2, 560, 300);
+//Motor   top(6, 7,  5, A1, 410, 700);
+//Roller roll(8, 9, 10, A3);
+//#define THIS_FINGER_ID 0
+/* finger 0 END */
+
+/* finger 2 BEGIN */
+Motor   mid(2, 4,  3, A2, 700, 280);
+Motor   top(6, 7,  5, A1, 800, 390);
+Roller roll(8, 9, 10, A0);
+#define THIS_FINGER_ID 2
+/* finger 2 END */
+
+/* finger 5 BEGIN */
+//Motor   mid(2, 4,  3, A2, 500, 700);//591 - 328
+//Motor   top(6, 7,  5, A1, 700, 300);
+//Roller roll(8, 9, 10, A0);
+//#define THIS_FINGER_ID 5
+/* finger 5 END */
 
 struct RECEIVE_DATA_STRUCTURE{
-  byte pos;
+  byte dir;
   byte A;
   byte B;
 };
 
 struct SEND_STATE{
   byte id;
-  byte pos;
-  byte npos;
-  byte state;
   byte A;
   byte B;
 };
@@ -48,38 +61,35 @@ void setup() {
   ETmain.begin(details(maindata), &Wire);
   ETsend.begin(details(senddata), &Wire);
   Wire.onReceive(receive);
-//  Wire.onReceive(receiveEvent);
-//  Wire.onRequest(requestEvent);
-  
+
+//  roll.setMove(false);
   mid.setGoal(50);
-  top.setGoal(50);
-//  roll.setGoal(4);
+  top.setGoal(30);
 }
 
 void receive(int numBytes) {}
 
-void loop() {
+unsigned long last = millis();
 
+void loop() {
   if(ETmain.receiveData()){
-    if(0 < maindata.pos && maindata.pos < 8){
-      roll.setGoal(maindata.pos);
-      mid.setGoal(maindata.A);
-      top.setGoal(maindata.B);
-    }else{
-      senddata.pos = roll.getPrev();
-      senddata.npos = roll.getCurr();
-      senddata.state = roll.getState();
-      senddata.A = mid.getPos();
-      senddata.B = top.getPos();
-            
-      ETsend.sendData(69);
+    if(maindata.dir == 0){
+      roll.setMove(true);
     }
-//    Serial.print(F("pos: "));
-//    Serial.print(maindata.pos);
-//    Serial.print(F(", A: "));
-//    Serial.print(maindata.A);
-//    Serial.print(F(", B: "));
-//    Serial.println(maindata.B);
+    if(maindata.dir == 1){
+      roll.setMove(false);
+    }
+    mid.setGoal(maindata.A);
+    top.setGoal(maindata.B);
+//    }else{
+//      if(millis()-last>200){
+//        last = millis();
+//        senddata.id = THIS_FINGER_ID;
+//        senddata.A = mid.getPos();
+//        senddata.B = top.getPos();
+//        ETsend.sendData(69);
+//      }
+//    }
   }
   
   mid.tick();

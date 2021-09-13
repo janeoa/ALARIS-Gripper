@@ -1,6 +1,9 @@
 #ifndef Roller_h
 #define Roller_h
 
+//#define THIS_FINGER_ID 0
+//#define THIS_FINGER_ID 5
+#define THIS_FINGER_ID 2
 /**
  * States
  */
@@ -24,23 +27,13 @@ class Roller{
 
     void tick();
 
-    void setGoal(byte goal){
-      if(0<goal && goal<8){
-        if(goal!=curr) x = goal;
-      }
-    };
-
-    void printVars(){
-      char msg[50];
-      sprintf(msg, "x:%d, p:%d, c:%d", x, prev, curr);
-      Serial.println(msg);
+    void setMove(bool dir){
+      _dir = dir;
+      state = MOVE; 
     }
 
     int getAnal(){return sensorValue;}
 
-    int getGoal(){return prev*100+curr*10+state; }
-    byte  getPrev(){return prev;}
-    byte  getCurr(){return curr;}
     byte getState(){return state;}
   private:
     byte enA,in1,in2,sensorPin;
@@ -49,10 +42,7 @@ class Roller{
     int sensorValue;
     byte state = CALIB;
     int lightCal;
-    int x = -1;
-
-    byte prev = 4;
-    byte curr = 4;
+    bool _dir = 0;
 
     void directionControl(bool toTheRight) {
       analogWrite(enA, 255);

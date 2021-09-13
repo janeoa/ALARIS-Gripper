@@ -86,7 +86,7 @@ func serveGripper(in *Gripper) {
 					fmt.Println("Rx: ", strings.TrimRight(hex.EncodeToString(buf), "0"))
 					fmt.Print("\n\n\n")
 				}
-				if rx_len == 0 && len(buf) >= 8 {
+				if rx_len == 0 && len(buf) >= 9 {
 					for i, v := range buf {
 						if v == 0x85 {
 							faults = 0
@@ -98,8 +98,8 @@ func serveGripper(in *Gripper) {
 								if printUARTlogs {
 									color.Green("Data len valid")
 								}
-								parseArduinoCommand(buf[i+2 : i+6])
-								buf = buf[i+6:]
+								parseArduinoCommand(buf[i+1 : i+7])
+								buf = buf[i+7:]
 								rx_len = 0
 								break
 							} else {
@@ -125,7 +125,7 @@ func serveGripper(in *Gripper) {
 
 type command struct {
 	id  byte
-	pos byte
+	dir byte
 	rol byte
 	ang byte
 }
@@ -138,8 +138,8 @@ func EasyTransferEncode(in command) {
 
 	toOut = append(toOut, in.id)
 	CS ^= in.id
-	toOut = append(toOut, in.pos)
-	CS ^= in.pos
+	toOut = append(toOut, in.dir)
+	CS ^= in.dir
 	toOut = append(toOut, in.rol)
 	CS ^= in.rol
 	toOut = append(toOut, in.ang)
@@ -153,15 +153,30 @@ func EasyTransferEncode(in command) {
 }
 
 func parseArduinoCommand(in []byte) {
-	if printUARTlogs {
-		color.Cyan("Finger ID: %d\nroll: \t%d\nrott: \t%d\n", in[0], in[1], in[2])
+	if in[0]^in[1]^in[2]^in[3]^in[4] == in[5] {
+		// color.Green("data is valid\n")
+	} else {
+		color.Red("recieved invalid data:")
+		color.Yellow("%s", hex.Dump(in))
+		return
+	}
+	index := int(in[1])
+	pos := int(in[2])
+	nA := int(in[3])
+	nB := int(in[4])
+
+	if printUARTlogs || nA != 255 {
+		color.Cyan("Finger ID: %d\npos: \t%d\nA: \t%d\nB: \t%d\n\n", index, pos, nA, nB)
 	}
 	updated := false
 	for i, v := range gripper.finger {
-		if v.index == int(in[0]) {
-			if v.pos != int(in[1]) {
-				color.Cyan("ID: %d|\t\t%d->%d\n", v.index, v.pos, int(in[1]))
-				gripper.finger[i].pos = int(in[1])
+		A, _ := v.A.Get()
+		B, _ := v.B.Get()
+		if v.index == index {
+			if v.pos != pos {
+				color.Cyan("ID: %d|\t\t%d->%d\t\t%2.0f\t\t%2.0f\n", v.index, v.pos, pos, A, B)
+				gripper.finger[i].pos = pos
+				gripper.finger[i].newPos = pos
 				myWindow.SetContent(generateGUI())
 			}
 			updated = true
@@ -169,21 +184,21 @@ func parseArduinoCommand(in []byte) {
 	}
 	if !updated {
 		gripper.finger = append(gripper.finger, fingerPos{
-			index:  int(in[0]),
-			pos:    int(in[1]),
-			newPos: int(in[1]),
+			index:  index,
+			pos:    pos,
+			newPos: pos,
 			active: false,
 			A:      binding.NewFloat(),
 			B:      binding.NewFloat(),
 		})
-		if int(in[2]) < 255 {
-			gripper.finger[len(gripper.finger)-1].A.Set(float64((in[2])))
-			gripper.finger[len(gripper.finger)-1].B.Set(float64((in[3])))
+		if nA < 255 {
+			gripper.finger[len(gripper.finger)-1].A.Set(float64(nA))
+			gripper.finger[len(gripper.finger)-1].B.Set(float64(nB))
 		} else {
 			gripper.finger[len(gripper.finger)-1].A.Set(50)
-			gripper.finger[len(gripper.finger)-1].B.Set(0)
+			gripper.finger[len(gripper.finger)-1].B.Set(30)
 		}
-		color.Cyan("new finger ID: %d, pos: %d\n", int(in[0]), int(in[1]))
+		color.Cyan("new finger ID: %d, pos: %d\n", index, pos)
 		myWindow.SetContent(generateGUI())
 	}
 }

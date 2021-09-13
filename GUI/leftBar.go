@@ -70,7 +70,7 @@ func fingerInfoItem(id int, active bool) fyne.CanvasObject {
 	// }
 
 	// activateButton.Text = "tapped"
-	name := widget.NewLabel(fmt.Sprintf("#%d is at: %d, new = ", id, gripper.finger[id].pos))
+	name := widget.NewLabel(fmt.Sprintf("#%d is at: %d, new = ", gripper.finger[id].index, gripper.finger[id].pos))
 
 	newpos := widget.NewEntry()
 	newPosEntries = append(newPosEntries, newpos)

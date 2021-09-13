@@ -10,25 +10,17 @@ void Roller::tick(){
       digitalWrite(in2, LOW);  
     } break;
     case MOVE:{
-      if (sensorValue < 400){
-         directionControl(is_next_on_right(prev, curr));
-      }
-      else if (sensorValue > 400) {
+      if (sensorValue < lightCalib+100){
+           directionControl(_dir);
+      }else{
          state = READY;
-//         Serial.println("found");
       }  
     } break;
     case CALIB:{
       lightCalib = analogRead(sensorPin);
-//      Serial.println(sensorValue);
       state = READY;    
     } break;
+    default:
+    break;
   }
-
-  if (x > -1){
-     state = MOVE;
-     prev = curr;
-     curr = x;
-     x = -1;
-  }  
 }
