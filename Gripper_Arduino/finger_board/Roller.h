@@ -3,7 +3,7 @@
 
 //#define THIS_FINGER_ID 0
 //#define THIS_FINGER_ID 5
-#define THIS_FINGER_ID 2
+//#define THIS_FINGER_ID 2
 /**
  * States
  */
@@ -13,8 +13,10 @@
 
 class Roller{
   public:
-    Roller(byte pinA, byte pinB, byte pinE, byte anal){
+    Roller(byte pinA, byte pinB, byte pinE, byte anal, byte id, int th){
       in1 = pinA; in2 = pinB; enA = pinE; sensorPin = anal;
+      THIS_FINGER_ID = id;
+      threshould = th;
       // Set all the motor control pins to outputs
       pinMode(enA, OUTPUT);
       pinMode(in1, OUTPUT);
@@ -43,6 +45,8 @@ class Roller{
     byte state = CALIB;
     int lightCal;
     bool _dir = 0;
+    byte THIS_FINGER_ID = 0;
+    int threshould = 700;
 
     void directionControl(bool toTheRight) {
       analogWrite(enA, 255);

@@ -10,7 +10,7 @@ void Roller::tick(){
       digitalWrite(in2, LOW);  
     } break;
     case MOVE:{
-      if (sensorValue < lightCalib+100){
+      if (sensorValue < threshould){
            directionControl(_dir);
       }else{
          state = READY;

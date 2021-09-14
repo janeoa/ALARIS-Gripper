@@ -16,24 +16,24 @@
  */
 
 /* finger 0 BEGIN */
+//#define THIS_FINGER_ID 0
 //Motor   mid(2, 4,  3, A2, 560, 300);
 //Motor   top(6, 7,  5, A1, 410, 700);
-//Roller roll(8, 9, 10, A3);
-//#define THIS_FINGER_ID 0
+//Roller roll(8, 9, 10, A3, THIS_FINGER_ID, 800);
 /* finger 0 END */
 
 /* finger 2 BEGIN */
+#define THIS_FINGER_ID 2
 Motor   mid(2, 4,  3, A2, 700, 280);
 Motor   top(6, 7,  5, A1, 800, 390);
-Roller roll(8, 9, 10, A0);
-#define THIS_FINGER_ID 2
+Roller roll(8, 9, 10, A0,THIS_FINGER_ID, 600);
 /* finger 2 END */
 
 /* finger 5 BEGIN */
+//#define THIS_FINGER_ID 5
 //Motor   mid(2, 4,  3, A2, 500, 700);//591 - 328
 //Motor   top(6, 7,  5, A1, 700, 300);
-//Roller roll(8, 9, 10, A0);
-//#define THIS_FINGER_ID 5
+//Roller roll(8, 9, 10, A0, THIS_FINGER_ID, 800);
 /* finger 5 END */
 
 struct RECEIVE_DATA_STRUCTURE{

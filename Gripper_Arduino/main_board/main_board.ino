@@ -92,10 +92,11 @@ void loop() {
 //    slaveCallIndex = (slaveCallIndex==7)?0:slaveCallIndex+1;
 //  }
   if(ETfromPCtoMain.receiveData()){
+    digitalWrite(pins[prev[dataFromPC.id]], LOW);
+    digitalWrite(pins[dataFromPC.pos], HIGH);
+    delay(50);
+    prev[dataFromPC.id] = dataFromPC.pos;
     if(foundSlaves[dataFromPC.id] != dataFromPC.pos){
-      digitalWrite(pins[prev[dataFromPC.id]], LOW);
-      digitalWrite(pins[dataFromPC.pos], HIGH);
-      prev[dataFromPC.id] = dataFromPC.pos;
       dataToFinger.dir = is_next_on_right(foundSlaves[dataFromPC.id], dataFromPC.pos)?0:1;//dataFromPC.pos;
     }else{
 //      digitalWrite(pins[dataFromPC.pos], LOW);
